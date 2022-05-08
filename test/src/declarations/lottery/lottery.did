@@ -1,0 +1,129 @@
+type UnLockSuccess = 
+ record {
+   activeUntil: int;
+   createdAt: int;
+   id: text;
+   lockedTickets: vec LockedTicket;
+   owner: principal;
+   price: nat;
+   status: LotteryStatus;
+   supply: nat;
+   tickets: vec Ticket;
+   token: Token;
+ };
+type UnLockResult = 
+ variant {
+   err: UnLockError;
+   ok: UnLockSuccess;
+ };
+type UnLockError = 
+ variant {
+   LotteryNotFound;
+   NotLocked;
+   Unpaied;
+ };
+type TransferSuccess = record {blockHeight: nat64;};
+type TransferResult = 
+ variant {
+   err: TransferError;
+   ok: TransferSuccess;
+ };
+type TransferError__1 = 
+ variant {
+   BadFee: record {expected_fee: Tokens;};
+   InsufficientFunds: record {balance: Tokens;};
+   TxCreatedInFuture;
+   TxDuplicate: record {duplicate_of: BlockIndex;};
+   TxTooOld: record {allowed_window_nanos: nat64;};
+ };
+type TransferError = 
+ record {
+   kind: TransferError__1;
+   message: opt text;
+ };
+type Tokens = record {e8s: nat64;};
+type Token = 
+ record {
+   canisterId: text;
+   index: nat;
+   standard: text;
+ };
+type Ticket = 
+ record {
+   count: nat;
+   participant: principal;
+   payeeSubAccount: SubAccount;
+   ticketId: text;
+ };
+type SubAccount = blob;
+type Lottery__1 = 
+ record {
+   activeUntil: int;
+   createdAt: int;
+   id: text;
+   lockedTickets: vec LockedTicket;
+   owner: principal;
+   price: nat;
+   status: LotteryStatus;
+   supply: nat;
+   tickets: vec Ticket;
+   token: Token;
+ };
+type LotteryStatus = 
+ variant {
+   Active;
+   InsufficientParticipants;
+   Selected: record {winner: principal;};
+ };
+type Lottery = 
+ service {
+   acceptCycles: () -> ();
+   availableCycles: () -> (nat) query;
+   create: (nat, nat, nat, text, nat, text) -> (CreateResult);
+   getLotteries: (nat, nat) -> (vec Lottery__1);
+   getTotalCount: () -> (nat);
+   lock: (text, nat) -> (LockResult);
+   refundICP: (text, text) -> (opt TransferResult);
+   setMinimalDuration: (nat) -> ();
+   setOwner: (principal) -> ();
+   setSettlementBuffer: (nat) -> ();
+   settle: (text) -> (opt LotteryStatus);
+   unlock: (text, text) -> (UnLockResult);
+ };
+type LockedTicket = 
+ record {
+   expiredAt: int;
+   ticket: Ticket;
+ };
+type LockSuccess = 
+ record {
+   expiredAt: int;
+   ticket: Ticket;
+ };
+type LockResult = 
+ variant {
+   err: LockError;
+   ok: LockSuccess;
+ };
+type LockError = 
+ variant {
+   CalledByOwner;
+   Ended;
+   Full;
+   LotteryNotFound;
+ };
+type CreateSuccess = text;
+type CreateResult = 
+ variant {
+   err: CreateError;
+   ok: CreateSuccess;
+ };
+type CreateError = 
+ variant {
+   InvalidActiveUntil;
+   InvalidPrice;
+   InvalidSupply;
+   NotTransferred;
+ };
+type BlockIndex = nat64;
+service : () -> Lottery

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "dfx": "0.9.3",
+  "canisters": {
+    "lottery": {
+      "type": "motoko",
+      "main": "backend/lottery/main.mo"
+    },
+    "erc721": {
+      "type": "motoko",
+      "main": "backend/erc721/main.mo"
+    },
+    "ledger": {
+      "type": "custom",
+      "wasm": "backend/ledger/ledger.wasm",
+      "candid": "backend/ledger/ledger.public.did"
+    }
+  },
+  "defaults": {
+    "build": {
+      "packtool": "",
+      "args": ""
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+const Identity = require("@dfinity/identity");
+const sha256 = require("sha256");
+const fs = require("fs");
+const Path = require("path");
+const { Secp256k1KeyIdentity } = Identity;
+const ext = require("../src/utils/ext");
+const {principalToAccountIdentifier, getSubAccountArray} = ext;
+
+const parseIdentity = (keyPath) => {
+  const rawKey = fs
+    .readFileSync(Path.join(__dirname, keyPath))
+    .toString()
+    .replace("-----BEGIN EC PRIVATE KEY-----", "")
+    .replace("-----END EC PRIVATE KEY-----", "")
+    .trim();
+
+  const rawBuffer = Uint8Array.from(rawKey).buffer;
+
+  const privKey = Uint8Array.from(sha256(rawBuffer, { asBytes: true }));
+
+  // Initialize an identity from the secret key
+  return Secp256k1KeyIdentity.fromSecretKey(Uint8Array.from(privKey).buffer);
+};
+
+['ledger', 'swapp', 'user1', 'user2', 'user3'].forEach(name => {
+  const identity = parseIdentity(`../src/utils/pem/${name}.pem`);
+  const accountidentifier = principalToAccountIdentifier(identity.getPrincipal().toString(), getSubAccountArray());
+  console.log('-----')
+  console.log(name);
+  console.log(identity.getPrincipal().toString());
+  console.log(accountidentifier);
+})

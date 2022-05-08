@@ -1,0 +1,36 @@
+// Version: 1.0.0
+type LockedTicket = {expiredAt : Int; ticket : Ticket};
+type LotteryStatus =
+  {#Active; #InsufficientParticipants; #Selected : {winner : Principal}};
+type Lottery__1 =
+  {
+    activeUntil : Int;
+    createdAt : Int;
+    id : Text;
+    lockedTickets : [LockedTicket];
+    owner : Principal;
+    price : Nat;
+    status : LotteryStatus;
+    supply : Nat;
+    tickets : [Ticket];
+    token : Token
+  };
+type SubAccount = Blob;
+type Ticket =
+  {
+    count : Nat;
+    participant : Principal;
+    payeeSubAccount : SubAccount;
+    ticketId : Text
+  };
+type Token = {canisterId : Text; index : Nat; standard : Text};
+actor {
+  stable var lotteryCount : Nat;
+  stable var lotteryEntries : [(Text, Lottery__1)];
+  stable var lotteryIdsByOwnerEntries : [(Principal, [Text])];
+  stable var lotteryIdsEntries : [(Int, Text)];
+  stable var minimalDuration : Nat;
+  stable var nftsEntries : [(Text, Text)];
+  stable var ownerPrincipal : Principal;
+  stable var settlementBuffer : Nat
+};
