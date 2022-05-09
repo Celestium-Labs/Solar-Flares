@@ -19,7 +19,7 @@ let TRANSFER_FEE = 10000n;
 
 const lotteryCanisterPrincipal = Principal.fromText(lotteryCanisterId);
 
-xdescribe("Lottery Tests", () => {
+describe("Lottery Tests", () => {
 
   beforeAll(async () => {
     console.log('aaa', new Date().getTime())
@@ -402,7 +402,7 @@ xdescribe("Lottery Tests", () => {
 });
 
 
-describe("function test", () => {
+xdescribe("function test", () => {
 
   beforeAll(async () => {
   });

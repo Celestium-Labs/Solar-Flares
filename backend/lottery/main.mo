@@ -413,7 +413,14 @@ shared({caller = actorOwner}) actor class Lottery() = this {
               }
             };
             let candidates = participants.toArray();
-            let entropy = Text.encodeUtf8(Int.toText(Time.now()));
+
+            // create an entropy for random value generation
+            let hash = SHA224.Digest();
+            hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(Time.now()))));
+            hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(candidates.size()))));
+            let hashSum = hash.sum();
+            let entropy = Blob.fromArray(hashSum);
+
             let sourceNumber = Random.Finite(entropy).range(Nat8.fromNat(candidates.size()));
 
             switch (sourceNumber) {
@@ -431,7 +438,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
                 Debug.print(Nat.toText(sourceNumber));
                 Debug.print("index");
                 Debug.print(Nat.toText(index));
-
+                
                 let winner = candidates[index];
                 // Transfer the nft to a winner;
                 ignore await EXT.transfer(lottery.token.canisterId, Principal.fromActor(this), winner, lottery.token.index);
