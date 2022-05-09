@@ -82,7 +82,8 @@ export type TransferResult = { 'ok' : TransferSuccess } |
 export interface TransferSuccess { 'blockHeight' : bigint }
 export type UnLockError = { 'NotLocked' : null } |
   { 'Unpaied' : null } |
-  { 'LotteryNotFound' : null };
+  { 'LotteryNotFound' : null } |
+  { 'Expired' : null };
 export type UnLockResult = { 'ok' : UnLockSuccess } |
   { 'err' : UnLockError };
 export interface UnLockSuccess {

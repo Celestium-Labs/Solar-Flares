@@ -82,6 +82,7 @@ export const idlFactory = ({ IDL }) => {
     'NotLocked' : IDL.Null,
     'Unpaied' : IDL.Null,
     'LotteryNotFound' : IDL.Null,
+    'Expired' : IDL.Null,
   });
   const UnLockResult = IDL.Variant({
     'ok' : UnLockSuccess,

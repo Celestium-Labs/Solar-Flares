@@ -122,7 +122,8 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     // simple validation    
     if (supply > 100) {
       return #err(#InvalidSupply);
-    } else if (price == 0) {
+    } else if (price < ICP.TRANSFER_FEE * 100) {
+      // must be equal or grather than 0.01 ICP
       return #err(#InvalidPrice);
     } else if (activeUntil - Time.now() < minimalDuration) {
       // The lottery must long a certain duration at least
@@ -280,6 +281,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   type UnLockError = {
     #LotteryNotFound;
     #NotLocked;
+    #Expired;
     #Unpaied;
   };
   type UnLockResult = Result.Result<UnLockSuccess, UnLockError>;
@@ -301,11 +303,15 @@ shared({caller = actorOwner}) actor class Lottery() = this {
           let ticket = locketTicket.ticket;
           var found = false;
           if (ticket.participant == caller and ticket.ticketId == ticketId) {
-            // check the payment
-            if (await ICP.hasTransferred(canisterAccount, ticket.ticketId, lottery.price * ticket.count)) {
+            if (locketTicket.expiredAt < Time.now()) {
+              // the ticket is expired
+              error := #Expired;
+            } else if (await ICP.hasTransferred(canisterAccount, ticket.ticketId, lottery.price * ticket.count)) {
+              // the payment was made successfully
               unlocked := ?ticket;
               found := true;
             } else {
+              // the payment was not made or insifficient
               error := #Unpaied;
             }
 
@@ -476,10 +482,19 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
         Debug.print("IN");
 
+        // make an array with locked and unlocked tickets
+        var allTickets : Buffer.Buffer<Ticket> = Buffer.Buffer(0);
         for (ticket in lottery.tickets.vals()) {
+          allTickets.add(ticket);
+        };
+        for (ticket in lottery.lockedTickets.vals()) {
+          allTickets.add(ticket.ticket);
+        };
+
+        for (ticket in allTickets.vals()) {
           Debug.print("ticket");
   
-          if (ticket.participant == caller) {
+          if (ticket.participant == caller and ticket.ticketId == ticketId) {
             Debug.print("found");
 
             let canisterAccount = Principal.fromActor(this);

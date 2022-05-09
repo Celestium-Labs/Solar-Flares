@@ -33,7 +33,7 @@ describe("Room Tests", () => {
   afterAll(async () => {
   });
 
-  xit("Run lottery sccessfully", async () => {
+  it("Run lottery sccessfully", async () => {
 
     const tokenIndex1 = await identities.swapp.erc721Actor.mintNFT({
       'to': { 'principal': identities.user1.identity.getPrincipal() },
@@ -58,7 +58,7 @@ describe("Room Tests", () => {
     console.log('transferred', transferred)
 
     let supply = 30n
-    let price = E8S * 1n / 100n;
+    let price = E8S * 2n / 100n;
     let activeUntil = (new Date().getTime() + FIFTEEN_SECS) * MILLI2NANO
     let standard = 'EXT'
 
@@ -236,7 +236,7 @@ describe("Room Tests", () => {
     console.log('transferred', transferred)
 
     let supply = 30n
-    let price = E8S * 1n / 100n;
+    let price = E8S * 2n / 100n;
     let activeUntil = (new Date().getTime() + FIFTEEN_SECS) * MILLI2NANO
     let standard = 'EXT'
 
@@ -375,6 +375,27 @@ describe("Room Tests", () => {
     const refund3 = await identities.user3.lotteryActor.refundICP(lotteryId, ticket3.ticketId);
     console.log('refund3', refund3);
     expect(refund3[0].ok).toEqual(expect.anything());
+
+    // make a payment to the locked ticket
+    {
+      const to = principalToAccountIdentifier(lotteryCanisterId, ticket4.payeeSubAccount);
+      console.log('to', to)
+      const transferredBlock4 = await identities.user3.ledgerActor.transfer({
+        to: to,
+        amount: { e8s: ticket4.count * lottery.price },
+        fee: { e8s: TRANSFER_FEE },
+        memo: 1n,
+        from_subaccount: [],
+        created_at_time: [],
+      });
+      expect(transferredBlock4.Ok).toBeGreaterThan(0n);
+
+      // an locked ticket also can be refunded
+      const refund = await identities.user3.lotteryActor.refundICP(lotteryId, ticket4.ticketId);
+      console.log('refund', refund);
+      expect(refund[0].ok).toEqual(expect.anything());
+
+    }
 
   });
 

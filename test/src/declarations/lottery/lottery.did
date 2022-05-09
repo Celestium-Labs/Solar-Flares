@@ -18,6 +18,7 @@ type UnLockResult =
  };
 type UnLockError = 
  variant {
+   Expired;
    LotteryNotFound;
    NotLocked;
    Unpaied;
