@@ -70,10 +70,12 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   // our principal id
   private stable var ownerPrincipal = actorOwner;
 
+  // # of preparetions
+  private stable var preparationCount = 0;
   // # of lottteries
   private stable var lotteryCount = 0;
 
-  // how long a lottery is at least
+  // how long a lottery longs at least
   private stable var minimalDuration = ONE_DAY;
 
   // a buffer duration until a settlement starts after a lottery ends
@@ -84,6 +86,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   private stable var lotteryIdsByOwnerEntries: [(Principal, [Text])] = [];
   private stable var nftsEntries: [(Text, Text)] = [];
   private stable var lotteryIdsEntries : [(Int, Text)] = [];
+  private stable var preparationsEntries : [(Principal, Lottery)] = [];
 
   // to store all lotteries
   private let lotteries : HashMap.HashMap<Text, Lottery> = HashMap.fromIter<Text, Lottery>(lotteryEntries.vals(), 0, Text.equal, Text.hash);
@@ -93,22 +96,29 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   private let lotteryIdsByOwner : HashMap.HashMap<Principal, [Text]> = HashMap.fromIter<Principal, [Text]>(lotteryIdsByOwnerEntries.vals(), 0, Principal.equal, Principal.hash);
   // to store lotteries ids
   private let lotteryIds : HashMap.HashMap<Int, Text> = HashMap.fromIter<Int, Text>(lotteryIdsEntries.vals(), 0, Int.equal, Int.hash);
+  // to store prepared lottery
+  private let preparations : HashMap.HashMap<Principal, Lottery> = HashMap.fromIter<Principal, Lottery>(preparationsEntries.vals(), 0, Principal.equal, Principal.hash);
 
-
-  // 
-  // create a lottery
   //
-  type CreateSuccess = Text;
-  type CreateError = {
+  // prepare a lottery
+  //
+  type PrepareSuccess = Text;
+  type PrepareError = {
     #InvalidSupply;
     #InvalidPrice;
     #InvalidActiveUntil;
-    #NotTransferred;
+    #NotOwned;
   };
-  type CreateResult = Result.Result<CreateSuccess, CreateError>;
-  public shared({caller}) func create(supply: Nat, price: Nat, activeUntil: Nat, canisterId: Text, tokenIndex: Nat, standard: Text): async CreateResult {
+  type PrepareResult = Result.Result<PrepareSuccess, PrepareError>;
+  public shared({caller}) func prepare(supply: Nat, price: Nat, activeUntil: Nat, canisterId: Text, tokenIndex: Nat, standard: Text): async PrepareResult {
 
-    // check if the token has already registered or not
+    // check the ownership of the token
+    let balance = await EXT.balance(canisterId, caller, tokenIndex);
+    if (balance != 1) {
+      return #err(#NotOwned);
+    };
+
+    // check if the token has already been registered or not
     let tokenId = canisterId # "-" # Nat.toText(tokenIndex);
     switch (nfts.get(tokenId)) {
       case null { };
@@ -130,26 +140,18 @@ shared({caller = actorOwner}) actor class Lottery() = this {
       return #err(#InvalidActiveUntil);
     };
 
-    // check the ownership of the token
-    let balance = await EXT.balance(canisterId, canisterAccount, tokenIndex);
-    if (balance != 1) {
-      return #err(#NotTransferred);
-    };
-
     // Generate a lotteryId
     let now = Time.now();
     let hash = SHA224.Digest();
-    hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(lotteryCount))));
+    hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(preparationCount))));
     hash.write(Blob.toArray(Text.encodeUtf8("-")));
     hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(now))));
     hash.write(Blob.toArray(Text.encodeUtf8("-")));
     hash.write(Blob.toArray(Principal.toBlob(caller)));
     let id = Hex.encode(hash.sum());
-    
-    lotteryIds.put(lotteryCount, id);
-    lotteryCount += 1;
+    preparationCount += 1;
 
-    lotteries.put(id, {
+    preparations.put(caller, {
       id;
       supply;
       price;
@@ -166,23 +168,64 @@ shared({caller = actorOwner}) actor class Lottery() = this {
       createdAt = Time.now();
     });
 
-    // Check if the lottery creator owns existing rooms. If they do, append the lottery ID to the existing array of lotteries. If not, create
-    // an array of owned lotteries for the lottery creator.
-    switch (lotteryIdsByOwner.get(caller)) {
-      case (?lotteryIds) {
-        let appended : Buffer.Buffer<Text> = Buffer.Buffer(0);
-        for (lotteryId in lotteryIds.vals()) {
-          appended.add(lotteryId);
+    return #ok(id);
+  };
+
+  // 
+  // create a lottery
+  //
+  type CreateSuccess = Text;
+  type CreateError = {
+    #NotTransferred;
+    #NotExists;
+  };
+  type CreateResult = Result.Result<CreateSuccess, CreateError>;
+  public shared({caller}) func create(): async CreateResult {
+
+    switch (preparations.get(caller)) {
+
+      case (?lottery) {
+
+        let canisterAccount = Principal.fromActor(this);
+        // check the ownership of the token
+        let balance = await EXT.balance(lottery.token.canisterId, canisterAccount, lottery.token.index);
+        if (balance != 1) {
+          return #err(#NotTransferred);
         };
-        appended.add(id);
-        lotteryIdsByOwner.put(caller, appended.toArray());
+
+        // Associate a lottery index with a lottery id
+        lotteryIds.put(lotteryCount, lottery.id);
+        lotteryCount += 1;
+
+        lotteries.put(lottery.id, lottery);
+        preparations.delete(caller);
+
+        // Check if the lottery creator owns existing rooms. If they do, append the lottery ID to the existing array of lotteries. If not, create
+        // an array of owned lotteries for the lottery creator.
+        switch (lotteryIdsByOwner.get(caller)) {
+          case (?lotteryIds) {
+            let appended : Buffer.Buffer<Text> = Buffer.Buffer(0);
+            for (lotteryId in lotteryIds.vals()) {
+              appended.add(lotteryId);
+            };
+            appended.add(lottery.id);
+            lotteryIdsByOwner.put(caller, appended.toArray());
+          };
+          case null {
+            lotteryIdsByOwner.put(caller, [lottery.id]);
+          };
+        };
+
+        return #ok(lottery.id);
+
       };
       case null {
-        lotteryIdsByOwner.put(caller, [id]);
-      };
-    };
 
-    return #ok(id);
+        return #err(#NotExists);
+
+      };
+    }
+
   };
 
   // 
@@ -593,6 +636,30 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     return arr.toArray();
   };
 
+  // get a prepared lottery
+  public shared({caller}) func getPreparation(): async ?Lottery {
+    return preparations.get(caller);
+  };
+
+  // cancel a prepared lottery
+  public shared({caller}) func cancelPreparation(): async Bool {
+    switch (preparations.get(caller)) {
+      case null { return false; };
+      case (?lottery) {
+
+        // Transfer back the nft to the owner;
+        let balance = await EXT.balance(lottery.token.canisterId, Principal.fromActor(this), lottery.token.index);
+        if (balance == 1) {
+          ignore await EXT.transfer(lottery.token.canisterId, Principal.fromActor(this), lottery.owner, lottery.token.index);
+        };
+
+        preparations.delete(caller);
+        return true;
+
+      };
+    };
+  };
+
   private func getTicketCount(lottery: Lottery, includeLockedTickets: Bool): Nat {
 
     var count = 0;
@@ -627,6 +694,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
   // upgrade
   system func preupgrade() {
+    preparationsEntries := Iter.toArray(preparations.entries());
     lotteryEntries := Iter.toArray(lotteries.entries());
     lotteryIdsByOwnerEntries := Iter.toArray(lotteryIdsByOwner.entries());
     nftsEntries := Iter.toArray(nfts.entries());
@@ -634,6 +702,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   };
 
   system func postupgrade() {
+    preparationsEntries := [];
     lotteryEntries := [];
     lotteryIdsByOwnerEntries := [];
     nftsEntries := [];

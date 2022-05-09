@@ -14,12 +14,12 @@ function delay(n) {
 
 let E8S = 100000000n
 let MILLI2NANO = 1000000;
-let FIFTEEN_SECS = 15 * 1000;
+let FIFTEEN_SECS = 20 * 1000;
 let TRANSFER_FEE = 10000n;
 
 const lotteryCanisterPrincipal = Principal.fromText(lotteryCanisterId);
 
-describe("Lottery Tests", () => {
+xdescribe("Lottery Tests", () => {
 
   beforeAll(async () => {
     console.log('aaa', new Date().getTime())
@@ -44,6 +44,16 @@ describe("Lottery Tests", () => {
     const id1 = tokenIdentifier(erc721CanisterId, tokenIndex1);
     console.log('id1', id1)
 
+    let supply = 30n
+    let price = E8S * 2n / 100n;
+    let activeUntil = (new Date().getTime() + FIFTEEN_SECS) * MILLI2NANO
+    let standard = 'EXT'
+
+    const prepareResult = await identities.user1.lotteryActor.prepare(supply, price, activeUntil, erc721CanisterId, tokenIndex1, standard)
+    console.log('prepareResult', prepareResult)
+    const lotteryId = prepareResult.ok;
+    expect(lotteryId.length).toEqual(56);
+
     const transferred = await identities.user1.erc721Actor.transfer({
       'from': { 'principal': identities.user1.identity.getPrincipal() },
       'to': { 'principal': lotteryCanisterPrincipal },
@@ -54,18 +64,11 @@ describe("Lottery Tests", () => {
       'subaccount': [],
     });
     expect(transferred.ok).toEqual(1n);
-
     console.log('transferred', transferred)
 
-    let supply = 30n
-    let price = E8S * 2n / 100n;
-    let activeUntil = (new Date().getTime() + FIFTEEN_SECS) * MILLI2NANO
-    let standard = 'EXT'
-
-    const createResult = await identities.user1.lotteryActor.create(supply, price, activeUntil, erc721CanisterId, tokenIndex1, standard)
+    const createResult = await identities.user1.lotteryActor.create()
     console.log('createResult', createResult)
-    const lotteryId = createResult.ok;
-    expect(lotteryId.length).toEqual(56);
+    expect(createResult.ok).toEqual(lotteryId);
 
     const totalLotteryCount = await identities.user1.lotteryActor.getTotalCount()
     console.log('totalLotteryCount', totalLotteryCount.toString())
@@ -222,6 +225,16 @@ describe("Lottery Tests", () => {
     const id1 = tokenIdentifier(erc721CanisterId, tokenIndex1);
     console.log('id1', id1)
 
+    let supply = 30n
+    let price = E8S * 2n / 100n;
+    let activeUntil = (new Date().getTime() + FIFTEEN_SECS) * MILLI2NANO
+    let standard = 'EXT'
+
+    const prepareResult = await identities.user1.lotteryActor.prepare(supply, price, activeUntil, erc721CanisterId, tokenIndex1, standard)
+    console.log('prepareResult', prepareResult)
+    const lotteryId = prepareResult.ok;
+    expect(lotteryId.length).toEqual(56);
+
     const transferred = await identities.user1.erc721Actor.transfer({
       'from': { 'principal': identities.user1.identity.getPrincipal() },
       'to': { 'principal': lotteryCanisterPrincipal },
@@ -232,18 +245,11 @@ describe("Lottery Tests", () => {
       'subaccount': [],
     });
     expect(transferred.ok).toEqual(1n);
-
     console.log('transferred', transferred)
 
-    let supply = 30n
-    let price = E8S * 2n / 100n;
-    let activeUntil = (new Date().getTime() + FIFTEEN_SECS) * MILLI2NANO
-    let standard = 'EXT'
-
-    const createResult = await identities.user1.lotteryActor.create(supply, price, activeUntil, erc721CanisterId, tokenIndex1, standard)
+    const createResult = await identities.user1.lotteryActor.create()
     console.log('createResult', createResult)
-    const lotteryId = createResult.ok;
-    expect(lotteryId.length).toEqual(56);
+    expect(createResult.ok).toEqual(lotteryId);
 
     const totalLotteryCount = await identities.user1.lotteryActor.getTotalCount()
     console.log('totalLotteryCount', totalLotteryCount.toString())
@@ -395,6 +401,85 @@ describe("Lottery Tests", () => {
       console.log('refund', refund);
       expect(refund[0].ok).toEqual(expect.anything());
 
+    }
+
+  });
+
+});
+
+
+describe("preparation test", () => {
+
+  beforeAll(async () => {
+  });
+
+  afterEach(async () => {
+  });
+
+  afterAll(async () => {
+  });
+
+  it("get refund", async () => {
+
+    const tokenIndex1 = await identities.swapp.erc721Actor.mintNFT({
+      'to': { 'principal': identities.user1.identity.getPrincipal() },
+      'metadata': []
+    });
+
+    console.log('tokenIndex1', tokenIndex1)
+    const id1 = tokenIdentifier(erc721CanisterId, tokenIndex1);
+    console.log('id1', id1)
+
+    let supply = 30n
+    let price = E8S * 2n / 100n;
+    let activeUntil = (new Date().getTime() + FIFTEEN_SECS) * MILLI2NANO
+    let standard = 'EXT'
+
+    const prepareResult = await identities.user1.lotteryActor.prepare(supply, price, activeUntil, erc721CanisterId, tokenIndex1, standard)
+    console.log('prepareResult', prepareResult)
+    const lotteryId = prepareResult.ok;
+    expect(lotteryId.length).toEqual(56);
+
+    const transferred = await identities.user1.erc721Actor.transfer({
+      'from': { 'principal': identities.user1.identity.getPrincipal() },
+      'to': { 'principal': lotteryCanisterPrincipal },
+      'token': id1,
+      'amount': 1n,
+      'memo': [1],
+      'notify': false,
+      'subaccount': [],
+    });
+    expect(transferred.ok).toEqual(1n);
+    console.log('transferred', transferred)
+    
+    const preparationResult = await identities.user1.lotteryActor.getPreparation()
+    console.log('preparationResult', preparationResult)
+    expect(preparationResult[0].id).toEqual(lotteryId);
+
+    {
+      const owner = await identities.swapp.erc721Actor.bearer(id1);
+      console.log('owner', owner)
+      const ownerExpected = toHexString(principalToAccountIdentifier(lotteryCanisterPrincipal.toString(), null));
+      console.log('ownerExpected', ownerExpected)
+      expect(owner.ok).toEqual(ownerExpected);
+    }
+
+    const cancelled = await identities.user1.lotteryActor.cancelPreparation()
+    console.log('cancelled', cancelled)
+    expect(cancelled).toEqual(true);
+
+    {
+      const owner = await identities.swapp.erc721Actor.bearer(id1);
+      console.log('owner', owner)
+      const ownerExpected = toHexString(principalToAccountIdentifier(identities.user1.identity.getPrincipal().toString(), null));
+      console.log('ownerExpected', ownerExpected)
+      expect(owner.ok).toEqual(ownerExpected);
+    }
+
+    {
+      const preparationResult = await identities.user1.lotteryActor.getPreparation()
+      console.log('preparationResult', preparationResult)
+      expect(preparationResult[0]).toEqual(undefined);
     }
 
   });
