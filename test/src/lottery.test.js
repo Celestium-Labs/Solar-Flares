@@ -19,7 +19,7 @@ let TRANSFER_FEE = 10000n;
 
 const lotteryCanisterPrincipal = Principal.fromText(lotteryCanisterId);
 
-describe("Room Tests", () => {
+xdescribe("Lottery Tests", () => {
 
   beforeAll(async () => {
     console.log('aaa', new Date().getTime())
@@ -397,6 +397,27 @@ describe("Room Tests", () => {
 
     }
 
+  });
+
+});
+
+
+describe("function test", () => {
+
+  beforeAll(async () => {
+  });
+
+  afterEach(async () => {
+  });
+
+  afterAll(async () => {
+  });
+
+  it("getLotteries", async () => {
+    await expect(identities.user1.lotteryActor.getLotteries(0, 51)).rejects.toThrow();
+    await expect(identities.user1.lotteryActor.getLotteries(10, 2)).rejects.toThrow();
+    const lotteries = await identities.user1.lotteryActor.getLotteries(0, 2)
+    expect(lotteries).toEqual(expect.anything());
   });
 
 });

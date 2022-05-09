@@ -560,6 +560,12 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
   // get lotteries
   public shared({caller}) func getLotteries(since: Nat, to: Nat): async [Lottery] {
+
+    if (to <= since) {
+      throw Error.reject("`to` must be grather than `since`.");
+    } else if (Nat.sub(to, since) > 50) {
+      throw Error.reject("You can't fetch more than 50 items at once.");
+    };
     
     let arr : Buffer.Buffer<Lottery> = Buffer.Buffer(0);
     for (i in Iter.range(since, to)) {
