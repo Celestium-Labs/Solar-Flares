@@ -1,0 +1,62 @@
+.container {
+  padding: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.container h1 {
+  font-size: 20px;
+  margin-right: auto;
+  cursor: pointer;
+  transition: all 0.2s ease-in;
+}
+
+.container ul {
+  display: flex;
+}
+
+.container ul li {
+  padding-right: 30px;
+  cursor: pointer;
+}
+
+.container ul li a {
+  display: block;
+  transition: all 0.2s ease-in;
+}
+
+.connectButton {
+  background: #FF0079;
+  box-shadow: 0 3px 0 0 #8E0F4C;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease-in;
+  display: block;
+}
+
+.connectButton:hover {
+  transform: translate3d(0, 2px, 0);
+  background: #CC0061;
+  box-shadow: none;
+}
+
+.container ul li a:hover, .container h1:hover {
+  transform: translate3d(0, -2px, 0);
+  color: #999;
+}
+
+
+@media screen and (max-width: 500px) {
+
+  .container ul {
+    display: none;
+  }
+
+}

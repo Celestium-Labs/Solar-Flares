@@ -32,5 +32,7 @@ actor {
   stable var minimalDuration : Nat;
   stable var nftsEntries : [(Text, Text)];
   stable var ownerPrincipal : Principal;
+  stable var preparationCount : Nat;
+  stable var preparationsEntries : [(Principal, Lottery__1)];
   stable var settlementBuffer : Nat
 };

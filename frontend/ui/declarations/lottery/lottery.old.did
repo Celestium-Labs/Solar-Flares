@@ -65,6 +65,7 @@ type PrepareResult =
  };
 type PrepareError = 
  variant {
+   AlreadyExists;
    InvalidActiveUntil;
    InvalidPrice;
    InvalidSupply;

@@ -1,0 +1,93 @@
+.background {
+  background: rgba(13, 13, 13, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: #1C1C1C;
+  padding: 30px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.description {
+  padding: 20px 0;
+}
+
+.description a {
+  color: #FF0079;
+}
+
+.nft {
+  display: flex;
+  padding: 15px 0;
+}
+
+.nftMetadata {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nftTitle {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.nftId, .nftStandard {
+  font-size: 12px;
+}
+
+.nft img {
+  width: 100px;
+  height: 100px;
+  display: block;
+  margin-right: 20px;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding-top: 20px;
+  justify-content: center;
+}
+
+.selectButton {
+  background: #FF0079;
+  box-shadow: 0 3px 0 0 #8E0F4C;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+  margin-right: 25px;
+}
+
+.cancelButton {
+  border: 1px solid #FFFFFF;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  cursor: pointer; 
+  margin-left: 25px;
+}

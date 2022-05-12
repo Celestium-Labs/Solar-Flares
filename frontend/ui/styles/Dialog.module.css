@@ -1,0 +1,77 @@
+.background {
+  background: rgba(13, 13, 13, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: #1C1C1C;
+  padding: 30px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.description {
+  padding: 20px 0;
+}
+
+.buttons {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding-top: 20px;
+  justify-content: center;
+}
+
+.selectButton {
+  background: #FF0079;
+  box-shadow: 0 3px 0 0 #8E0F4C;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+  margin-right: 25px;
+  transition: all 0.2s ease-in;
+  display: block;
+}
+
+.selectButton:hover {
+  transform: translate3d(0, 2px, 0);
+  background: #CC0061;
+  box-shadow: none;
+}
+
+.cancelButton {
+  border: 1px solid #FFFFFF;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  cursor: pointer; 
+  margin-left: 25px;
+  transition: all 0.2s ease-in;
+  display: block;
+}
+
+.cancelButton:hover {
+  color: #999;
+  border: 1px solid #999;
+}

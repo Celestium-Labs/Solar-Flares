@@ -19,6 +19,7 @@ export interface Lottery {
   'cancelPreparation' : () => Promise<boolean>,
   'create' : () => Promise<CreateResult>,
   'getLotteries' : (arg_0: bigint, arg_1: bigint) => Promise<Array<Lottery__1>>,
+  'getLottery' : (arg_0: string) => Promise<[] | [Lottery__1]>,
   'getPreparation' : () => Promise<[] | [Lottery__1]>,
   'getTotalCount' : () => Promise<bigint>,
   'lock' : (arg_0: string, arg_1: bigint) => Promise<LockResult>,
@@ -56,6 +57,7 @@ export interface Lottery__1 {
 }
 export type PrepareError = { 'InvalidActiveUntil' : null } |
   { 'InvalidPrice' : null } |
+  { 'AlreadyExists' : null } |
   { 'NotOwned' : null } |
   { 'InvalidSupply' : null };
 export type PrepareResult = { 'ok' : PrepareSuccess } |

@@ -1,5 +1,5 @@
 import { Principal } from "@dfinity/principal";
-const { identities, erc721CanisterId, swappCanisterId, ledgerCanisterId } = require("./utils/identity");
+const { identities, erc721CanisterId, ledgerCanisterId } = require("./utils/identity");
 
 const ext = require("./utils/ext");
 const { tokenIdentifier, decodeTokenId, principalToAccountIdentifier, fromHexString, toHexString } = ext;
@@ -10,9 +10,7 @@ let E8S = 100000000n
 let SWAP_FEE = 2000000n;
 let TRANSFER_FEE = 10000n;
 
-const swappCanisterPrincipal = Principal.fromText(swappCanisterId);
-
-xdescribe("Room Tests", () => {
+describe("Room Tests", () => {
 
   beforeAll(async () => {
   });
@@ -27,24 +25,27 @@ xdescribe("Room Tests", () => {
 
     const WALLET_PRINCIPAL_ID_1 = 't4o4v-w2hdc-6x33f-bamx4-tjsqi-snulf-f3zh2-vdtv6-mj43c-kjso6-iqe'
 
-    const tokenIndex = await identities.swapp.erc721Actor.mintNFT({
-      'to': { 'principal': Principal.fromText(WALLET_PRINCIPAL_ID_1) },
-      'metadata': []
-    });
+    // for (let i = 0; i < 30; i++) {
+    //   const tokenIndex = await identities.swapp.erc721Actor.mintNFT({
+    //     'to': { 'principal': Principal.fromText(WALLET_PRINCIPAL_ID_1) },
+    //     'metadata': []
+    //   })
+    //   console.log('issued NFT to plug wallet1: ', tokenIndex)
+    // }
 
     const accountIdentifier = principalToAccountIdentifier(WALLET_PRINCIPAL_ID_1, 0);
-    // console.log('accountIdentifier', accountIdentifier);
+    console.log('accountIdentifier', accountIdentifier);
 
-    await identities.user1.ledgerActor.transfer({
-      to: fromHexString(accountIdentifier),
-      amount: { e8s: E8S },
+    const res = await identities.user1.ledgerActor.transfer({
+      to: accountIdentifier,
+      amount: { e8s: E8S * 10n },
       fee: { e8s: TRANSFER_FEE },
       memo: 1n,
       from_subaccount: [],
       created_at_time: [],
     });
+    console.log('tranres', res)
 
-    console.log('issued NFT to plug wallet1: ', tokenIndex)
   });
 
 
@@ -58,16 +59,17 @@ xdescribe("Room Tests", () => {
     });
 
     const accountIdentifier = principalToAccountIdentifier(WALLET_PRINCIPAL_ID_1, 0);
-    // console.log('accountIdentifier', accountIdentifier);
+    console.log('accountIdentifier', accountIdentifier);
 
-    await identities.user1.ledgerActor.transfer({
-      to: fromHexString(accountIdentifier),
-      amount: { e8s: E8S },
+    const res = await identities.user1.ledgerActor.transfer({
+      to: accountIdentifier,
+      amount: { e8s: E8S * 10n },
       fee: { e8s: TRANSFER_FEE },
       memo: 1n,
       from_subaccount: [],
       created_at_time: [],
     });
+    console.log('tranres', res)
 
     console.log('issued NFT to plug wallet2: ', tokenIndex)
   });

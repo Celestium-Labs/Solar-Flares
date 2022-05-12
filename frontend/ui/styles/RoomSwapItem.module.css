@@ -1,0 +1,93 @@
+
+.swapItemTitle {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.swapItemPersonId {
+  text-align: center;
+  padding: 5px 0 15px;
+  font-size: 14px;
+}
+
+.imageBox {
+  width: 320px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #D8D8D8;
+  margin-bottom: 20px;
+}
+
+.swapButton {
+  background: #FF0079;
+  box-shadow: 0 3px 0 0 #8E0F4C;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+  margin: 20px auto 0;
+  transition: all 0.2s ease-in;
+  display: block;
+}
+
+.swapButton:hover {
+  transform: translate3d(0, 2px, 0);
+  background: #CC0061;
+  box-shadow: none;
+}
+
+.swapButtonDisabled {
+  background: #B2B2B2;
+  box-shadow: none;
+  color: white;
+  cursor: auto;
+}
+
+.nftTitle {
+  font-weight: 600;
+  padding-bottom: 15px;
+  text-align: center;
+}
+
+.nftCaution {
+  font-size: 14px;
+  text-align: center;
+}
+
+.nftStrongCaution {
+  text-align: center;
+  color: #FF0079;
+}
+
+
+@media screen and (max-width: 1000px) {
+  .imageBox {
+    width: 250px;
+    height: 250px;
+  }
+}
+
+@media screen and (max-width: 750px) {
+  /* .swapItem {
+    grid-row: 2 / 5;
+  } */
+
+  .imageBox {
+    width: 150px;
+    height: 150px;
+    margin: 20px auto;
+  }
+
+  .swapItemPersonId {
+    height: 30px;
+    overflow-x: scroll;
+  }
+}

@@ -1,0 +1,155 @@
+.container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.top h1 {
+  font-weight: 600;
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.top .roomId {
+  font-size: 12px;
+  padding: 10px 0 30px;
+}
+
+.soldNumber {
+  font-size: 28px;
+}
+
+.numbers {
+  padding: 20px 0;
+}
+
+.lockedNumber {
+  margin-left: 10px;
+}
+
+.gauge {
+  margin-top: 15px;
+  background: #D8D8D8;
+  height: 6px;
+  max-width: 500px;
+  border-radius: 1px;
+  display: flex;
+}
+
+.soldGauge {
+  background: #FF0079;
+  height: 6px;
+}
+
+.lockedGauge {
+  background: #898989;
+  height: 6px;
+}
+
+.applyContainer {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 30px;
+}
+
+.applyContainer input {
+  margin: 0 10px 0 20px;
+  border: 1px solid #fff;
+  padding: 5px 10px;
+}
+
+.applyButton {
+  background: #FF0079;
+  box-shadow: 0 3px 0 0 #8E0F4C;
+  border-radius: 5px;
+  text-align: center;
+  width: 180px;
+  height: 45px;
+  line-height: 45px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease-in;
+  display: block;
+}
+
+.applyButton:hover {
+  transform: translate3d(0, 2px, 0);
+  background: #CC0061;
+  box-shadow: none;
+}
+
+.applyButtonDisabled {
+  background: #aaa;
+  box-shadow: none;
+  font-weight: normal;
+  cursor: auto;
+}
+
+.applyButtonDisabled:hover {
+  background: #aaa;
+  transform: none;
+}
+
+.chanceToWinContainer {
+  font-weight: 600;
+  padding-bottom: 20px;
+}
+
+.chanceToWin {
+  font-size: 28px;
+  padding-left: 5px;
+}
+
+.ticketTitle {
+  font-weight: 600;
+  font-size: 20px;
+  margin-top: 20px;
+}
+
+.ticketContainer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 20px 0;
+  column-gap: 20px;
+  row-gap: 20px;
+}
+
+.lotteryContainer {
+  display: flex;
+}
+
+.lotteryLeft {
+  width: 500px;
+}
+
+.lotteryRight {
+  margin-left: auto;
+}
+
+.lotteryRight img {
+  min-width: 300px;
+  min-height: 300px;
+}
+
+@media screen and (max-width: 1000px) {
+  .swapContainer {
+    width: 700px;
+  }
+}
+
+@media screen and (max-width: 750px) {
+
+  /* .swapArrows {
+    grid-row: 1 / 5;
+  } */
+  .swapContainer {
+    width: 450px;
+    grid-template-columns: 2fr 1fr 2fr;
+  }
+
+  .swapArrows svg {
+    width: 40px;
+  }
+}

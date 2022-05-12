@@ -57,6 +57,19 @@ type Ticket =
    ticketId: text;
  };
 type SubAccount = blob;
+type PrepareSuccess = text;
+type PrepareResult = 
+ variant {
+   err: PrepareError;
+   ok: PrepareSuccess;
+ };
+type PrepareError = 
+ variant {
+   InvalidActiveUntil;
+   InvalidPrice;
+   InvalidSupply;
+   NotOwned;
+ };
 type Lottery__1 = 
  record {
    activeUntil: int;
@@ -80,10 +93,13 @@ type Lottery =
  service {
    acceptCycles: () -> ();
    availableCycles: () -> (nat) query;
-   create: (nat, nat, nat, text, nat, text) -> (CreateResult);
+   cancelPreparation: () -> (bool);
+   create: () -> (CreateResult);
    getLotteries: (nat, nat) -> (vec Lottery__1);
+   getPreparation: () -> (opt Lottery__1);
    getTotalCount: () -> (nat);
    lock: (text, nat) -> (LockResult);
+   prepare: (nat, nat, nat, text, nat, text) -> (PrepareResult);
    refundICP: (text, text) -> (opt TransferResult);
    setMinimalDuration: (nat) -> ();
    setOwner: (principal) -> ();
@@ -121,9 +137,7 @@ type CreateResult =
  };
 type CreateError = 
  variant {
-   InvalidActiveUntil;
-   InvalidPrice;
-   InvalidSupply;
+   NotExists;
    NotTransferred;
  };
 type BlockIndex = nat64;

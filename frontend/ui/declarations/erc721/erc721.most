@@ -1,0 +1,21 @@
+// Version: 1.0.0
+type AccountIdentifier = Text;
+type AccountIdentifier__1 = AccountIdentifier;
+type AccountIdentifier__2 = AccountIdentifier__1;
+type Metadata =
+  {
+    #fungible :
+      {decimals : Nat8; metadata : ?Blob; name : Text; symbol : Text};
+    #nonfungible : {metadata : ?Blob}
+  };
+type Metadata__1 = Metadata;
+type TokenIndex = Nat32;
+type TokenIndex__1 = TokenIndex;
+actor {
+  stable var _allowancesState : [(TokenIndex__1, Principal)];
+  stable var _minter : Principal;
+  stable var _nextTokenId : Nat32;
+  stable var _registryState : [(TokenIndex__1, AccountIdentifier__2)];
+  stable var _supply : Nat;
+  stable var _tokenMetadataState : [(TokenIndex__1, Metadata__1)]
+};

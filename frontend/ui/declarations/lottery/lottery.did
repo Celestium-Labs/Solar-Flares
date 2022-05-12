@@ -65,6 +65,7 @@ type PrepareResult =
  };
 type PrepareError = 
  variant {
+   AlreadyExists;
    InvalidActiveUntil;
    InvalidPrice;
    InvalidSupply;
@@ -88,6 +89,25 @@ type LotteryStatus =
    Active;
    InsufficientParticipants;
    Selected: record {winner: principal;};
+ };
+type Lottery = 
+ service {
+   acceptCycles: () -> ();
+   availableCycles: () -> (nat) query;
+   cancelPreparation: () -> (bool);
+   create: () -> (CreateResult);
+   getLotteries: (nat, nat) -> (vec Lottery__1);
+   getLottery: (text) -> (opt Lottery__1);
+   getPreparation: () -> (opt Lottery__1);
+   getTotalCount: () -> (nat);
+   lock: (text, nat) -> (LockResult);
+   prepare: (nat, nat, nat, text, nat, text) -> (PrepareResult);
+   refundICP: (text, text) -> (opt TransferResult);
+   setMinimalDuration: (nat) -> ();
+   setOwner: (principal) -> ();
+   setSettlementBuffer: (nat) -> ();
+   settle: (text) -> (opt LotteryStatus);
+   unlock: (text, text) -> (UnLockResult);
  };
 type LockedTicket = 
  record {
@@ -123,20 +143,4 @@ type CreateError =
    NotTransferred;
  };
 type BlockIndex = nat64;
-service : {
-  acceptCycles: () -> ();
-  availableCycles: () -> (nat) query;
-  cancelPreparation: () -> (bool);
-  create: () -> (CreateResult);
-  getLotteries: (nat, nat) -> (vec Lottery__1);
-  getPreparation: () -> (opt Lottery__1);
-  getTotalCount: () -> (nat);
-  lock: (text, nat) -> (LockResult);
-  prepare: (nat, nat, nat, text, nat, text) -> (PrepareResult);
-  refundICP: (text, text) -> (opt TransferResult);
-  setMinimalDuration: (nat) -> ();
-  setOwner: (principal) -> ();
-  setSettlementBuffer: (nat) -> ();
-  settle: (text) -> (opt LotteryStatus);
-  unlock: (text, text) -> (UnLockResult);
-}
+service : () -> Lottery

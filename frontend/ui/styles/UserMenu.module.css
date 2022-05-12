@@ -1,0 +1,56 @@
+.background {
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+}
+
+.container {
+  width: 240px;
+  margin: 0 auto;
+  padding: 15px 30px;
+  background: #171717;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.50);
+  border-radius: 9px;
+  position: absolute;
+  top: 90px;
+  right: 30px;
+  text-align: center;
+}
+
+.container p {
+  padding: 15px 0;
+}
+
+.principal {
+  font-size: 14px;
+  text-align: left;
+}
+
+.container .rooms {
+  margin: 15px 0;
+  border-top: 1px solid #fff;
+  border-bottom: 1px solid #fff;
+  color: #FF0079;
+  cursor: pointer;
+}
+
+.rooms a {
+  transition: all 0.2s ease-in;
+  display: block;
+}
+
+.logout {
+  color: #FF0079;
+  cursor: pointer;
+  transition: all 0.2s ease-in;
+  display: block;
+}
+
+.container .rooms a:hover, .logout:hover {
+  color: #a50150;
+}

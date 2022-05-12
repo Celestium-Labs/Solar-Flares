@@ -50,6 +50,7 @@ export const idlFactory = ({ IDL }) => {
   const PrepareError = IDL.Variant({
     'InvalidActiveUntil' : IDL.Null,
     'InvalidPrice' : IDL.Null,
+    'AlreadyExists' : IDL.Null,
     'NotOwned' : IDL.Null,
     'InvalidSupply' : IDL.Null,
   });
@@ -103,6 +104,7 @@ export const idlFactory = ({ IDL }) => {
     'cancelPreparation' : IDL.Func([], [IDL.Bool], []),
     'create' : IDL.Func([], [CreateResult], []),
     'getLotteries' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Vec(Lottery__1)], []),
+    'getLottery' : IDL.Func([IDL.Text], [IDL.Opt(Lottery__1)], []),
     'getPreparation' : IDL.Func([], [IDL.Opt(Lottery__1)], []),
     'getTotalCount' : IDL.Func([], [IDL.Nat], []),
     'lock' : IDL.Func([IDL.Text, IDL.Nat], [LockResult], []),

@@ -1,0 +1,233 @@
+.background {
+  background: rgba(13, 13, 13, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  max-width: 700px;
+  min-width: 700px;
+  margin: 0 auto;
+  max-height: 500px;
+  overflow-y: scroll;
+  background-color: #1C1C1C;
+  padding: 30px;
+}
+
+.header {
+  display: flex;
+  padding: 20px 0;
+}
+
+.topHeader {
+  display: flex;
+  font-weight: 600;
+  margin-right: auto;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #fff;
+}
+
+.topClose {
+  cursor: pointer;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.subtitle {
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.reload {
+  color: #FF0079;
+  cursor: pointer;
+}
+
+.description a {
+  color: #FF0079;
+  padding-bottom: 20px;
+}
+
+.nft {
+  display: flex;
+  padding: 15px 0;
+  border-bottom: 1px solid #D8D8D8;
+}
+
+.nftMetadata {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nftTitle {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.nftId, .nftStandard {
+  font-size: 12px;
+}
+
+.nft img {
+  width: 100px;
+  height: 100px;
+  display: block;
+  margin-right: 20px;
+}
+
+
+.nftButtonContainer {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.nftSelectButton {
+  background: #FF0079;
+  box-shadow: 0 3px 0 0 #8E0F4C;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+
+.buttons {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.selectButton {
+  background: #FF0079;
+  box-shadow: 0 3px 0 0 #8E0F4C;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+  margin: 0 20px;
+  transition: all 0.2s ease-in;
+}
+
+.selectButton:hover {
+  transform: translate3d(0, 2px, 0);
+  background: #CC0061;
+  box-shadow: none;
+}
+
+.disabledButton {
+  background: #ccc;
+  box-shadow: none;
+}
+
+.disabledButton:hover {
+  transform: none;
+  background: #ccc;
+  cursor: auto;
+}
+
+.cancelButton {
+  border: 1px solid #FFFFFF;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  cursor: pointer; 
+  transition: all 0.2s ease-in;
+  display: block;
+  margin: 0 20px 0;
+}
+
+.cancelButton:hover {
+  color: #999;
+  border: 1px solid #999;
+}
+
+.noNFTFound {
+  text-align: center;
+  padding-top: 30px;
+}
+
+.input {
+  border: 1px solid #fff;
+  padding: 5px 10px;
+  border-radius: 3px;
+  margin-right: 5px;
+  text-align: right;
+  letter-spacing: 0.05em;
+}
+
+.datepickerContainer {
+  display: flex;
+  width: auto;
+  align-items: center;
+}
+
+.datepicker {
+  border: 1px solid #fff;
+  padding: 5px 10px;
+  margin-right: 10px;
+  width: auto;
+}
+
+.datepicker div {
+  width: auto;
+}
+
+.datepickerContainer span {
+  margin-left: 0;
+  display: block;
+  width: 300px;
+  margin-right: 0;
+}
+
+.step2ItemTitle {
+  padding-bottom: 10px;
+}
+
+.step2Item {
+  margin-bottom: 20px;
+}
+
+.react-datepicker-wrapper {
+  width: auto;
+}
+
+.confitmationTable {
+  padding: 20px 0;
+}
+
+.confitmationTable span {
+  font-weight: 600;
+}
+
+.smallDescription {
+  font-size: 14px;
+  padding: 10px 0;
+  line-height: 24px;
+}

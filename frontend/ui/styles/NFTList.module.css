@@ -1,0 +1,115 @@
+.background {
+  background: rgba(13, 13, 13, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  max-height: 500px;
+  overflow-y: scroll;
+  background-color: #1C1C1C;
+  padding: 30px;
+}
+
+.header {
+  display: flex;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-right: auto;
+}
+
+.reload {
+  color: #FF0079;
+  cursor: pointer;
+}
+
+.description {
+  padding: 20px 0;
+}
+
+.description a {
+  color: #FF0079;
+}
+
+.nft {
+  display: flex;
+  padding: 15px 0;
+  border-bottom: 1px solid #D8D8D8;
+}
+
+.nftMetadata {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nftTitle {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.nftId, .nftStandard {
+  font-size: 12px;
+}
+
+.nft img {
+  width: 100px;
+  height: 100px;
+  display: block;
+  margin-right: 20px;
+}
+
+.nftButtonContainer {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.nftSelectButton {
+  background: #FF0079;
+  box-shadow: 0 3px 0 0 #8E0F4C;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.cancelButton {
+  border: 1px solid #FFFFFF;
+  border-radius: 5px;
+  text-align: center;
+  width: 120px;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 5px;
+  cursor: pointer; 
+  margin: 25px auto 0;
+  transition: all 0.2s ease-in;
+  display: block;
+}
+
+.cancelButton:hover {
+  color: #999;
+  border: 1px solid #999;
+}
+
+.noNFTFound {
+  text-align: center;
+  padding-top: 30px;
+}
