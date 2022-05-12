@@ -108,9 +108,18 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     #InvalidPrice;
     #InvalidActiveUntil;
     #NotOwned;
+    #AlreadyExists;
   };
   type PrepareResult = Result.Result<PrepareSuccess, PrepareError>;
   public shared({caller}) func prepare(supply: Nat, price: Nat, activeUntil: Nat, canisterId: Text, tokenIndex: Nat, standard: Text): async PrepareResult {
+
+    // see if there is a prepared lottery
+    switch (preparations.get(caller)) {
+      case (?lottery) {
+        return #err(#AlreadyExists);
+      };
+      case null {};
+    };
 
     // check the ownership of the token
     let balance = await EXT.balance(canisterId, caller, tokenIndex);
@@ -346,6 +355,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
           let ticket = locketTicket.ticket;
           var found = false;
           if (ticket.participant == caller and ticket.ticketId == ticketId) {
+
             if (locketTicket.expiredAt < Time.now()) {
               // the ticket is expired
               error := #Expired;
@@ -608,6 +618,14 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     return lotteryCount;
   };
 
+  // get lottery
+  public shared({caller}) func getLottery(id: Text): async ?Lottery {
+
+    // TODO: delete expired tickets?
+
+    return lotteries.get(id);
+  };
+
   // get lotteries
   public shared({caller}) func getLotteries(since: Nat, to: Nat): async [Lottery] {
 
@@ -680,6 +698,10 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
     return count;
   };
+
+  // public func test(): async Principal {
+  //   return Principal.fromActor(this);
+  // };
 
   // Internal cycle management - good general case
   public func acceptCycles() : async () {
