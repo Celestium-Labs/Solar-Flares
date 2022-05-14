@@ -8,7 +8,7 @@ export const idlFactory = ({ IDL }) => {
     'ok' : CreateSuccess,
     'err' : CreateError,
   });
-  const LotteryStatus = IDL.Variant({
+  const PoolStatus = IDL.Variant({
     'InsufficientParticipants' : IDL.Null,
     'Active' : IDL.Null,
     'Selected' : IDL.Record({ 'winner' : IDL.Principal }),
@@ -26,10 +26,10 @@ export const idlFactory = ({ IDL }) => {
     'payeeSubAccount' : SubAccount,
   });
   const LockedTicket = IDL.Record({ 'ticket' : Ticket, 'expiredAt' : IDL.Int });
-  const Lottery__1 = IDL.Record({
+  const Pool = IDL.Record({
     'id' : IDL.Text,
     'activeUntil' : IDL.Int,
-    'status' : LotteryStatus,
+    'status' : PoolStatus,
     'token' : Token,
     'tickets' : IDL.Vec(Ticket),
     'owner' : IDL.Principal,
@@ -43,7 +43,7 @@ export const idlFactory = ({ IDL }) => {
     'Ended' : IDL.Null,
     'CalledByOwner' : IDL.Null,
     'Full' : IDL.Null,
-    'LotteryNotFound' : IDL.Null,
+    'PoolNotFound' : IDL.Null,
   });
   const LockResult = IDL.Variant({ 'ok' : LockSuccess, 'err' : LockError });
   const PrepareSuccess = IDL.Text;
@@ -80,7 +80,7 @@ export const idlFactory = ({ IDL }) => {
   const UnLockSuccess = IDL.Record({
     'id' : IDL.Text,
     'activeUntil' : IDL.Int,
-    'status' : LotteryStatus,
+    'status' : PoolStatus,
     'token' : Token,
     'tickets' : IDL.Vec(Ticket),
     'owner' : IDL.Principal,
@@ -90,24 +90,24 @@ export const idlFactory = ({ IDL }) => {
     'price' : IDL.Nat,
   });
   const UnLockError = IDL.Variant({
+    'PoolNotFound' : IDL.Null,
     'NotLocked' : IDL.Null,
     'Unpaied' : IDL.Null,
-    'LotteryNotFound' : IDL.Null,
     'Expired' : IDL.Null,
   });
   const UnLockResult = IDL.Variant({
     'ok' : UnLockSuccess,
     'err' : UnLockError,
   });
-  const Lottery = IDL.Service({
+  const SolarFlares = IDL.Service({
     'acceptCycles' : IDL.Func([], [], []),
     'availableCycles' : IDL.Func([], [IDL.Nat], ['query']),
     'cancelPreparation' : IDL.Func([], [IDL.Bool], []),
     'create' : IDL.Func([], [CreateResult], []),
     'getCreators' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
-    'getLotteries' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Vec(Lottery__1)], []),
-    'getLottery' : IDL.Func([IDL.Text], [IDL.Opt(Lottery__1)], []),
-    'getPreparation' : IDL.Func([], [IDL.Opt(Lottery__1)], []),
+    'getPool' : IDL.Func([IDL.Text], [IDL.Opt(Pool)], []),
+    'getPools' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Vec(Pool)], []),
+    'getPreparation' : IDL.Func([], [IDL.Opt(Pool)], []),
     'getTimestamp' : IDL.Func([], [IDL.Int], []),
     'getTotalCount' : IDL.Func([], [IDL.Nat], []),
     'lock' : IDL.Func([IDL.Text, IDL.Nat], [LockResult], []),
@@ -117,11 +117,12 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'refundICP' : IDL.Func([IDL.Text, IDL.Text], [IDL.Opt(TransferResult)], []),
+    'setCreators' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
     'setMinimalDuration' : IDL.Func([IDL.Nat], [], []),
     'setOwner' : IDL.Func([IDL.Principal], [], []),
     'setSettlementBuffer' : IDL.Func([IDL.Nat], [], []),
     'unlock' : IDL.Func([IDL.Text, IDL.Text], [UnLockResult], []),
   });
-  return Lottery;
+  return SolarFlares;
 };
 export const init = ({ IDL }) => { return []; };

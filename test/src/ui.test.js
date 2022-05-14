@@ -25,13 +25,13 @@ xdescribe("Room Tests", () => {
 
     const WALLET_PRINCIPAL_ID_1 = 't4o4v-w2hdc-6x33f-bamx4-tjsqi-snulf-f3zh2-vdtv6-mj43c-kjso6-iqe'
 
-    // for (let i = 0; i < 30; i++) {
-    //   const tokenIndex = await identities.swapp.erc721Actor.mintNFT({
-    //     'to': { 'principal': Principal.fromText(WALLET_PRINCIPAL_ID_1) },
-    //     'metadata': []
-    //   })
-    //   console.log('issued NFT to plug wallet1: ', tokenIndex)
-    // }
+    for (let i = 0; i < 20; i++) {
+      const tokenIndex = await identities.swapp.erc721Actor.mintNFT({
+        'to': { 'principal': Principal.fromText(WALLET_PRINCIPAL_ID_1) },
+        'metadata': []
+      })
+      console.log('issued NFT to plug wallet1: ', tokenIndex)
+    }
 
     const accountIdentifier = principalToAccountIdentifier(WALLET_PRINCIPAL_ID_1, 0);
     console.log('accountIdentifier', accountIdentifier);
@@ -45,6 +45,10 @@ xdescribe("Room Tests", () => {
       created_at_time: [],
     });
     console.log('tranres', res)
+
+    // const a = Principal.fromText("t4o4v-w2hdc-6x33f-bamx4-tjsqi-snulf-f3zh2-vdtv6-mj43c-kjso6-iqe");
+    // await identities.swapp.solarFlaresActor.setCreators([a]);
+    // console.log('creators', (await identities.swapp.solarFlaresActor.getCreators())[0].toString())
 
   });
 

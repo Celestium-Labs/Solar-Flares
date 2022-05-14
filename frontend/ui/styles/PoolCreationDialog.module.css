@@ -14,9 +14,9 @@
   max-width: 700px;
   min-width: 700px;
   margin: 0 auto;
-  max-height: 500px;
+  max-height: 700px;
   overflow-y: scroll;
-  background-color: #1C1C1C;
+  background-color: #fcfcfc;
   padding: 30px;
 }
 
@@ -29,17 +29,21 @@
   display: flex;
   font-weight: 600;
   margin-right: auto;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #fff;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #161616;
 }
 
 .topClose {
   cursor: pointer;
 }
 
+.topClose:hover {
+  color: #999;
+}
+
 .title {
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   margin-right: auto;
 }
 
@@ -51,11 +55,21 @@
 .reload {
   color: #FF0079;
   cursor: pointer;
+  transition: all 0.2s ease-in;
+}
+
+.reload:hover {
+  color: #b00153;
 }
 
 .description a {
-  color: #FF0079;
+  color: #555;
+  text-decoration: underline;
   padding-bottom: 20px;
+}
+
+.description a:hover {
+  color: #999;
 }
 
 .nft {
@@ -94,9 +108,9 @@
 }
 
 .nftSelectButton {
-  background: #FF0079;
-  box-shadow: 0 3px 0 0 #8E0F4C;
-  border-radius: 5px;
+  background: #161616;
+  color: #fcfcfc;
+  border-radius: 2px;
   text-align: center;
   width: 120px;
   height: 40px;
@@ -105,6 +119,12 @@
   text-overflow: ellipsis;
   overflow: hidden;
   cursor: pointer;
+  transition: all 0.2s ease-in;
+}
+
+.nftSelectButton:hover {
+  background: #333;
+  transform: translate3d(0, 2px, 0);
 }
 
 
@@ -117,9 +137,9 @@
 }
 
 .selectButton {
-  background: #FF0079;
-  box-shadow: 0 3px 0 0 #8E0F4C;
-  border-radius: 5px;
+  background: #161616;
+  color: #fcfcfc;
+  border-radius: 2px;
   text-align: center;
   width: 120px;
   height: 40px;
@@ -134,7 +154,7 @@
 
 .selectButton:hover {
   transform: translate3d(0, 2px, 0);
-  background: #CC0061;
+  background: #333;
   box-shadow: none;
 }
 
@@ -150,8 +170,8 @@
 }
 
 .cancelButton {
-  border: 1px solid #FFFFFF;
-  border-radius: 5px;
+  border: 1px solid #161616;
+  border-radius: 2px;
   text-align: center;
   width: 120px;
   height: 40px;
@@ -174,7 +194,7 @@
 }
 
 .input {
-  border: 1px solid #fff;
+  border: 1px solid #161616;
   padding: 5px 10px;
   border-radius: 3px;
   margin-right: 5px;
@@ -189,7 +209,7 @@
 }
 
 .datepicker {
-  border: 1px solid #fff;
+  border: 1px solid #161616;
   padding: 5px 10px;
   margin-right: 10px;
   width: auto;
@@ -230,4 +250,8 @@
   font-size: 14px;
   padding: 10px 0;
   line-height: 24px;
+}
+
+.bold {
+  font-weight: 700;
 }

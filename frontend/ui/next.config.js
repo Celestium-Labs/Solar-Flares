@@ -25,9 +25,9 @@ module.exports = {
       ) {
         return {
           '/': { page: '/' },
-          '/nft': { page: '/nft' },
-          '/participated': { page: '/nfts' },
-          '/provided': { page: '/nfts' },
+          '/pool': { page: '/pool' },
+          '/participated': { page: '/pools' },
+          '/created': { page: '/pools' },
         }
       },
 }

@@ -5,23 +5,23 @@ import styles from '../styles/Home.module.css'
 import { Layout } from '../components/Layout'
 import { Context } from '../services/context';
 import Loader from '../components/Loader';
-import LotteryActor, { Lottery } from '../actors/lottery';
+import PoolActor, { Pool } from '../actors/solarFlares';
 import { Principal } from '@dfinity/principal';
 import Link from 'next/link'
-import LotteryComponent from '../components/Lottery';
+import PoolComponent from '../components/Pool';
 
 const Home: NextPage = () => {
 
   const { accountIdentifier, principal } = useContext(Context);
-  const [lotteries, setLotteries] = useState<Lottery[]>([]);
-  const [mode, setMode] = useState<'' | 'participated' | 'provided'>('');
+  const [pools, setLotteries] = useState<Pool[]>([]);
+  const [mode, setMode] = useState<'' | 'participated' | 'created'>('');
 
   async function fetch() {
 
     const isParticipated = location.href.indexOf('participated') > -1;
 
     console.log(isParticipated)
-    const actor = new LotteryActor();
+    const actor = new PoolActor();
     await actor.createActor();
 
     Loader.show();
@@ -35,15 +35,15 @@ const Home: NextPage = () => {
 
     const latest = parseInt(count.toString())
 
-    const lotteries = await actor.getLotteries(Math.max(0, latest - 50), latest);
+    const pools = await actor.getPools(Math.max(0, latest - 50), latest);
     Loader.dismiss();
-    if (lotteries == null) {
+    if (pools == null) {
       alert('Try again later.')
       return;
     }
 
-    const ls: Lottery[] = [];
-    lotteries.forEach(l => {
+    const ls: Pool[] = [];
+    pools.forEach(l => {
       if (!isParticipated && principal == l.owner.toString()) {
         console.log('ccc')
         ls.push(l)
@@ -71,7 +71,7 @@ const Home: NextPage = () => {
       }
     })
 
-    setMode(isParticipated ? 'participated' : 'provided');
+    setMode(isParticipated ? 'participated' : 'created');
     setLotteries(ls.reverse());
 
   }
@@ -84,8 +84,8 @@ const Home: NextPage = () => {
 
   }, [accountIdentifier, principal]);
 
-  const doms = lotteries.map(l => {
-    return <LotteryComponent lottery={l} />
+  const doms = pools.map(pool => {
+    return <PoolComponent pool={pool} />
   })
 
   return (
@@ -115,17 +115,17 @@ const Home: NextPage = () => {
 
         {mode != '' &&
           <div className={styles.main}>
-            <h2>NFTs you {mode}</h2>
+            <h2>Pools you {mode}</h2>
           </div>
         }
 
-        {mode != '' && lotteries.length == 0 &&
-          <p style={{ textAlign: 'center' }}>No lotteries found.</p>
+        {mode != '' && pools.length == 0 &&
+          <p style={{ textAlign: 'center' }}>No pools found.</p>
         }
 
         {mode != '' &&
 
-          <div className={styles.lotteriesContainer}>
+          <div className={styles.poolsContainer}>
             {doms}
           </div>
         }

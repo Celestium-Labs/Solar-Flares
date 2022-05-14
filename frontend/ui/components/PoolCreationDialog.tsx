@@ -1,30 +1,29 @@
 import { useState, useEffect, useContext } from "react";
 import { principalToAccountIdentifier } from "../utils/ext";
-import styles from '../styles/LotteryCreationDialog.module.css'
+import styles from '../styles/PoolCreationDialog.module.css'
 import { Context } from "../services/context";
 import { NFTDetails } from '@psychedelic/dab-js'
 import { getCachedNFTs } from '../actors/dab';
 import Loader from "./Loader";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import LotteryActor from '../actors/lottery';
+import SolarFlaresActor from '../actors/solarFlares';
 import LedgerActor from "../actors/ledger";
 import EXTNftActor from "../actors/nft/ext";
 
 type IProps = {
   principal: string,
   close: () => void,
-  resumeWithPreparedLottery: () => void,
-  created: (lotteryId: string) => void,
+  resumeWithPreparedPool: () => void,
+  created: (poolId: string) => void,
 }
 
 const today = new Date()
-const minDate = new Date(today)
-minDate.setDate(minDate.getDate() + 3)
-const maxDate = new Date(today)
-maxDate.setDate(minDate.getDate() + 14)
+let t = Math.floor(today.getTime() / (1000 * 60 * 30)) * (1000 * 60 * 30);
+const minDate = new Date(t + 1000 * 60 * 60 * 24 * 3) //  3days
+const maxDate = new Date(t + 1000 * 60 * 60 * 24 * 14) // 14 days
 
-export default function Component({ principal, created, close, resumeWithPreparedLottery }: IProps) {
+export default function Component({ principal, created, close, resumeWithPreparedPool }: IProps) {
 
   const [nfts, setNFTs] = useState<NFTDetails[]>([]);
   const [loaded, setLoaded] = useState(false);
@@ -79,7 +78,7 @@ export default function Component({ principal, created, close, resumeWithPrepare
     <div className={styles.container}>
 
       <div className={styles.topHeader}>
-        <h3 className={styles.title}>Host a lottery</h3>
+        <h3 className={styles.title}>Create a pool</h3>
         <p className={styles.topClose} onClick={() => {
           close();
         }}>close</p>
@@ -112,7 +111,7 @@ export default function Component({ principal, created, close, resumeWithPrepare
         <div>
 
           <div className={styles.header}>
-            <p className={styles.subtitle}>Step 2 / 3. Set the lottery settings</p>
+            <p className={styles.subtitle}>Step 2 / 3. Set pool settings</p>
           </div>
 
           <p className={styles.step2ItemTitle}>How many tickets do you want to issue?</p>
@@ -160,8 +159,13 @@ export default function Component({ principal, created, close, resumeWithPrepare
             <p className={styles.step2ItemTitle}>After when will a winner be selected?</p>
 
             <div className={styles.datepickerContainer}>
-              <DatePicker className={styles.datepicker} minDate={minDate} maxDate={maxDate} selected={activeUntil} onChange={(date) => setActiveUntil(date ?? new Date())} />
-              <span>12:00AM UTC</span>
+              <DatePicker className={styles.datepicker} showTimeSelect={true} dateFormat="Pp" minDate={minDate} maxDate={maxDate} selected={activeUntil} onChange={(date) => {
+
+                if (date) {
+                  setActiveUntil(date)
+                }
+
+              }} />
             </div>
           </div>
 
@@ -200,16 +204,15 @@ export default function Component({ principal, created, close, resumeWithPrepare
             <ul className={styles.confitmationTable}>
               <li>Tickets: <span>{units}</span></li>
               <li>Price per one ticket: <span>{price} ICP</span></li>
-              <li>A winner will be selected after <span>{activeUntil.toDateString()}</span></li>
+              <li>A winner will be selected after <span>{activeUntil.toLocaleDateString()} {activeUntil.toLocaleTimeString()}</span></li>
             </ul>
- 
-            <p>You will raise {(price * units).toFixed(2)} ICP in total. We take 10% as a transaction fee.</p>
+
+            <p><span className={styles.bold}>You will raise {(price * units).toFixed(2)} ICP in total</span>. We take 10% as a transaction fee.</p>
 
           </div>
 
-          <p className={styles.smallDescription}>Your NFT will be transferred to our escrow account for a lottery.
-            Your NFT will be transferred back to you when you cannot sell all the tickets.
-            We take 10% of your earning as a transaction fee.
+          <p className={styles.smallDescription}>Your NFT will be transferred to our escrow account in order to create a pool.
+            When all the tickets are not sold, the NFT will be transferred back to you.
           </p>
 
           <div className={styles.buttons}>
@@ -220,26 +223,30 @@ export default function Component({ principal, created, close, resumeWithPrepare
               const index = parseInt(selectedNFT.index.toString());
 
               const canisterId = 'rkp4c-7iaaa-aaaaa-aaaca-cai' //selectedNFT.canister
-              const tokenIndex = 79 // 76~100 index
+              const tokenIndex = 135 // 134~154 index
               console.log('tokenIndex', tokenIndex)
 
-              const lotteryActor = new LotteryActor();
+              const solarFlaresActor = new SolarFlaresActor();
               const nftActor = new EXTNftActor(canisterId);
 
-              await lotteryActor.createActor()
+              await solarFlaresActor.createActor()
               await nftActor.createAgent()
 
               Loader.show('Preparing..');
 
-              const d = new Date().getTime()
-              const d2 = d + (1000 * 60 * 60); // 1hour later 
+              let date = activeUntil;
+              if (process.env.NEXT_PUBLIC_ENV == 'dev') {
+                const d = new Date().getTime()
+                date = new Date(d + (1000 * 60 * 60)); // 1hour later 
+              }
+
               const priceBigInt = Math.floor(price * 100000000);
-              const prepareResult = await lotteryActor.prepare(units, priceBigInt, new Date(d2), canisterId, tokenIndex, 'EXT');
+              const prepareResult = await solarFlaresActor.prepare(units, priceBigInt, date, canisterId, tokenIndex, 'EXT');
               console.log('prepareResult', prepareResult)
 
               if (prepareResult == null) {
                 Loader.dismiss();
-                alert('Unknown error occurs to preparing a lottery. Try again later.')
+                alert('Unknown error occurs to preparing a pool. Try again later.')
                 return;
               }
 
@@ -258,10 +265,10 @@ export default function Component({ principal, created, close, resumeWithPrepare
                     setShowConfirmation(false);
                     break;
                   case (JSON.stringify({ 'AlreadyExists': null })):
-                    alert('You are creating another lottery now.')
+                    alert('You are creating another pool now.')
                     setShowConfirmation(false);
                     setSelectedNFT(null)
-                    resumeWithPreparedLottery();
+                    resumeWithPreparedPool();
                     break;
                 }
                 return;
@@ -269,12 +276,12 @@ export default function Component({ principal, created, close, resumeWithPrepare
 
               Loader.show('Transferring..');
 
-              const res = await nftActor.transfer(tokenIndex, principal, lotteryActor.canisterId);
+              const res = await nftActor.transfer(tokenIndex, principal, solarFlaresActor.canisterId);
               console.log('res', res)
 
               Loader.show('Creating..');
 
-              const createResult = await lotteryActor.create();
+              const createResult = await solarFlaresActor.create();
               console.log('createResult', createResult)
 
               const createError = (createResult as any).err
@@ -285,7 +292,7 @@ export default function Component({ principal, created, close, resumeWithPrepare
                     alert('You need to transfer the nft first.')
                     break;
                   case (JSON.stringify({ 'NotExists': null })):
-                    alert('Unknown error occurs when creating a lottery. Try again later.')
+                    alert('Unknown error occurs when creating a pool. Try again later.')
                     close()
                     break;
                 }
@@ -300,8 +307,8 @@ export default function Component({ principal, created, close, resumeWithPrepare
 
             }}>Submit</p>
             <p className={styles.cancelButton} onClick={() => {
-              close()
-            }}>Cancel</p>
+              setShowConfirmation(false)
+            }}>Back</p>
           </div>
         </>
       }

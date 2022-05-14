@@ -3,18 +3,14 @@ import Head from 'next/head'
 import { useEffect, useContext, useCallback, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import Dfinity from '../components/svg/dfinity';
-import Step1 from '../components/svg/step1';
-import Step2 from '../components/svg/step2';
-import Step3 from '../components/svg/step3';
-import Step4 from '../components/svg/step4';
 import Twitter from '../components/svg/twitter';
 import { Layout } from '../components/Layout'
 import { Context } from '../services/context';
 import { useRouter } from 'next/router'
 import Loader from '../components/Loader';
-import LotteryActor, { Lottery } from '../actors/lottery';
-import LotteryCreationDialog from '../components/LotteryCreationDialog';
-import LotteryComponent from '../components/Lottery';
+import PoolActor, { Pool } from '../actors/solarFlares';
+import PoolCreationDialog from '../components/PoolCreationDialog';
+import PoolComponent from '../components/Pool';
 import { Principal } from '@dfinity/principal';
 
 const Home: NextPage = () => {
@@ -22,8 +18,8 @@ const Home: NextPage = () => {
   const { login, accountIdentifier, principal, showLoginMenu, setShowLoginMenu } = useContext(Context);
   const [initialized, setInitialized] = useState(false);
 
-  const [showLotteryDialog, setShowLotteryDialog] = useState(false);
-  const [lotteries, setLotteries] = useState<Lottery[]>([]);
+  const [showPoolDialog, setShowPoolDialog] = useState(false);
+  const [pools, setPools] = useState<Pool[]>([]);
   const [creators, setCreators] = useState<Principal[]>([]);
 
   const router = useRouter()
@@ -31,22 +27,22 @@ const Home: NextPage = () => {
   async function fetch(to: number | null) {
 
     Loader.show();
-    const actor = new LotteryActor();
+    const actor = new PoolActor();
     await actor.createActor();
 
 
     if (to && to > 0) {
-      const newLotteries = await actor.getLotteries(Math.max(0, to - 12), to);
-      if (newLotteries) {
-        setLotteries(arr => [...newLotteries.reverse(), ...arr])
+      const newPools = await actor.getPools(Math.max(0, to - 12), to);
+      if (newPools) {
+        setPools(arr => [...newPools.reverse(), ...arr])
       }
     } else {
       const countBigInt = await actor.getTotalCount() ?? BigInt(0);
       const count = parseInt(countBigInt.toString());
-      const newLotteries = await actor.getLotteries(Math.max(0, count - 12), count);
-      console.log('newLotteries', newLotteries)
-      if (newLotteries) {
-        setLotteries(arr => [...newLotteries.reverse(), ...arr])
+      const newPools = await actor.getPools(Math.max(0, count - 12), count);
+      console.log('newPools', newPools)
+      if (newPools) {
+        setPools(arr => [...newPools.reverse(), ...arr])
       }
     }
 
@@ -55,7 +51,7 @@ const Home: NextPage = () => {
 
   async function getCreators() {
 
-    const actor = new LotteryActor();
+    const actor = new PoolActor();
     await actor.createActor();
     const creators = await actor.getCreators();
     if (creators != null) {
@@ -78,7 +74,7 @@ const Home: NextPage = () => {
       return
     }
 
-    const actor = new LotteryActor();
+    const actor = new PoolActor();
     await actor.createActor()
 
     Loader.show();
@@ -95,7 +91,7 @@ const Home: NextPage = () => {
 
     } else {
       // create
-      setShowLotteryDialog(true);
+      setShowPoolDialog(true);
     }
 
 
@@ -141,15 +137,15 @@ const Home: NextPage = () => {
           {isCreator &&
             <p onClick={() => {
               startDrip();
-            }} className={styles.createButton}>Host a drip!</p>
+            }} className={styles.createButton}>Create a pool!</p>
           }
         </div>
 
         <section className={styles.section} id="drips">
 
-          <div className={styles.lotteriesContainer}>
-            {lotteries.map(lottery => {
-              return <LotteryComponent key={lottery.id} lottery={lottery} />
+          <div className={styles.poolsContainer}>
+            {pools.map(pool => {
+              return <PoolComponent key={pool.id} pool={pool} />
             })}
           </div>
         </section>
@@ -201,15 +197,15 @@ const Home: NextPage = () => {
       </main>
 
 
-      {principal && showLotteryDialog &&
-        <LotteryCreationDialog principal={principal} close={() => {
-          setShowLotteryDialog(false)
-        }} created={(lotteryId) => {
-          setShowLotteryDialog(false)
+      {principal && showPoolDialog &&
+        <PoolCreationDialog principal={principal} close={() => {
+          setShowPoolDialog(false)
+        }} created={(poolId) => {
+          setShowPoolDialog(false)
 
-          router.push(`/drip/?id=${lotteryId}`);
+          router.push(`/pool/?id=${poolId}`);
 
-        }} resumeWithPreparedLottery={() => {
+        }} resumeWithPreparedPool={() => {
 
         }} />
       }

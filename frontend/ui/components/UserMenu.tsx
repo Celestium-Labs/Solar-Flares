@@ -19,14 +19,14 @@ export default function Component({ close }: IProps) {
       <p className={styles.principal}>{principal}</p>
 
       <p className={styles.hosted}>
-        <Link href="/provided">
-          <a>NFTs you provided</a>
+        <Link href="/created">
+          <a>Pools you created</a>
         </Link>
       </p>
 
       <p className={styles.participated}>
         <Link href="/participated">
-          <a>NFTs you participated</a>
+          <a>Pools you participated</a>
         </Link>
       </p>
 

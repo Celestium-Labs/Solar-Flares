@@ -6,13 +6,13 @@ const fetch = require("isomorphic-fetch");
 const { Secp256k1KeyIdentity } = Identity;
 
 const canisterIds = require("../../../.dfx/local/canister_ids.json");
-const lotteryCanisterId = canisterIds.lottery.local;
+const solarFlaresCanisterId = canisterIds.SolarFlares.local;
 const ledgerCanisterId = canisterIds.ledger.local;
 const erc721CanisterId = canisterIds.erc721.local;
 
 const principals = ['swapp', 'ledger', 'user1', 'user2', 'user3'];
 
-const lotteryDeclarations = require("../declarations/lottery");
+const solarFlaresDeclarations = require("../declarations/SolarFlares");
 const ledgerDeclarations = require("../declarations/ledger");
 const erc721Declarations = require("../declarations/erc721");
 
@@ -33,7 +33,7 @@ const identities = {};
 principals.forEach(identityName => {
 
   const identity = parseIdentity(`./pem/${identityName}.pem`);
-  const lotteryActor = lotteryDeclarations.createActor(lotteryCanisterId, {
+  const solarFlaresActor = solarFlaresDeclarations.createActor(solarFlaresCanisterId, {
     agentOptions: {
       identity: identity,
       fetch,
@@ -59,7 +59,7 @@ principals.forEach(identityName => {
 
   identities[identityName] = {}
   identities[identityName].identity = identity;
-  identities[identityName].lotteryActor = lotteryActor;
+  identities[identityName].solarFlaresActor = solarFlaresActor;
   identities[identityName].ledgerActor = ledgerActor;
   identities[identityName].erc721Actor = erc721Actor;
 
@@ -69,7 +69,7 @@ principals.forEach(identityName => {
 
 module.exports = {
   identities,
-  lotteryCanisterId,
+  solarFlaresCanisterId,
   ledgerCanisterId,
   erc721CanisterId,
 };

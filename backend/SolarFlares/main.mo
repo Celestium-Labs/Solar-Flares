@@ -22,7 +22,7 @@ import Text "mo:base/Text";
 import Time "mo:base/Time";
 import Debug "mo:base/Debug";
 
-shared({caller = actorOwner}) actor class Lottery() = this {
+shared({caller = actorOwner}) actor class SolarFlares() = this {
 
   type Token = {
     canisterId: Text;
@@ -42,7 +42,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     expiredAt: Int;
   };
 
-  type LotteryStatus = {
+  type PoolStatus = {
     #Active;
     #Selected: {
       winner: Principal;
@@ -50,7 +50,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     #InsufficientParticipants;
   };
 
-  type Lottery = {
+  type Pool = {
     id: Text;
     supply: Nat;
     price: Nat;
@@ -59,7 +59,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     token: Token;
     tickets: [Ticket];
     lockedTickets: [LockedTicket];
-    status: LotteryStatus;
+    status: PoolStatus;
     createdAt: Int;
   };
 
@@ -72,36 +72,36 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
   // # of preparetions
   private stable var preparationCount = 0;
-  // # of lottteries
-  private stable var lotteryCount = 0;
+  // # of pools
+  private stable var poolCount = 0;
 
-  // how long a lottery longs at least
+  // how long a pool longs at least
   private stable var minimalDuration = ONE_DAY;
 
-  // a buffer duration until a settlement starts after a lottery ends
+  // a buffer duration until a settlement starts after a pool ends
   private stable var settlementBuffer = ONE_HOUR;
 
   // for upgrade
-  private stable var lotteryEntries : [(Text, Lottery)] = [];
-  private stable var lotteryIdsByOwnerEntries: [(Principal, [Text])] = [];
+  private stable var poolEntries : [(Text, Pool)] = [];
+  private stable var poolIdsByOwnerEntries: [(Principal, [Text])] = [];
   private stable var nftsEntries: [(Text, Text)] = [];
-  private stable var lotteryIdsEntries : [(Int, Text)] = [];
-  private stable var preparationsEntries : [(Principal, Lottery)] = [];
+  private stable var poolIdsEntries : [(Int, Text)] = [];
+  private stable var preparationsEntries : [(Principal, Pool)] = [];
   private stable var creators : [Principal] = [];
 
-  // to store all lotteries
-  private let lotteries : HashMap.HashMap<Text, Lottery> = HashMap.fromIter<Text, Lottery>(lotteryEntries.vals(), 0, Text.equal, Text.hash);
+  // to store all pools
+  private let pools : HashMap.HashMap<Text, Pool> = HashMap.fromIter<Text, Pool>(poolEntries.vals(), 0, Text.equal, Text.hash);
   // to store tokens
   private let nfts : HashMap.HashMap<Text, Text> = HashMap.fromIter<Text, Text>(nftsEntries.vals(), 0, Text.equal, Text.hash);
-  // to store lotteries per owner
-  private let lotteryIdsByOwner : HashMap.HashMap<Principal, [Text]> = HashMap.fromIter<Principal, [Text]>(lotteryIdsByOwnerEntries.vals(), 0, Principal.equal, Principal.hash);
-  // to store lotteries ids
-  private let lotteryIds : HashMap.HashMap<Int, Text> = HashMap.fromIter<Int, Text>(lotteryIdsEntries.vals(), 0, Int.equal, Int.hash);
-  // to store prepared lottery
-  private let preparations : HashMap.HashMap<Principal, Lottery> = HashMap.fromIter<Principal, Lottery>(preparationsEntries.vals(), 0, Principal.equal, Principal.hash);
+  // to store pools per owner
+  private let poolIdsByOwner : HashMap.HashMap<Principal, [Text]> = HashMap.fromIter<Principal, [Text]>(poolIdsByOwnerEntries.vals(), 0, Principal.equal, Principal.hash);
+  // to store pools ids
+  private let poolIds : HashMap.HashMap<Int, Text> = HashMap.fromIter<Int, Text>(poolIdsEntries.vals(), 0, Int.equal, Int.hash);
+  // to store prepared pool
+  private let preparations : HashMap.HashMap<Principal, Pool> = HashMap.fromIter<Principal, Pool>(preparationsEntries.vals(), 0, Principal.equal, Principal.hash);
 
   //
-  // prepare a lottery
+  // prepare a pool
   //
   type PrepareSuccess = Text;
   type PrepareError = {
@@ -115,7 +115,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   type PrepareResult = Result.Result<PrepareSuccess, PrepareError>;
   public shared({caller}) func prepare(supply: Nat, price: Nat, activeUntil: Nat, canisterId: Text, tokenIndex: Nat, standard: Text): async PrepareResult {
 
-    // see if the caller can prepare a lottery
+    // see if the caller can prepare a pool
     var allowed = creators.size() == 0;
     for (principal in creators.vals()) {
       if (principal == caller) { allowed := true; };
@@ -125,9 +125,9 @@ shared({caller = actorOwner}) actor class Lottery() = this {
       return #err(#NotAllowed);
     };
 
-    // see if there is a prepared lottery
+    // see if there is a prepared pool
     switch (preparations.get(caller)) {
-      case (?lottery) {
+      case (?pool) {
         return #err(#AlreadyExists);
       };
       case null {};
@@ -143,8 +143,8 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     let tokenId = canisterId # "-" # Nat.toText(tokenIndex);
     switch (nfts.get(tokenId)) {
       case null { };
-      case (?lotteryId) {
-        return #ok(lotteryId);
+      case (?poolId) {
+        return #ok(poolId);
       };
     };
 
@@ -157,11 +157,11 @@ shared({caller = actorOwner}) actor class Lottery() = this {
       // must be equal or grather than 0.01 ICP
       return #err(#InvalidPrice);
     } else if (activeUntil - Time.now() < minimalDuration) {
-      // The lottery must long a certain duration at least
+      // The pool must long a certain duration at least
       return #err(#InvalidActiveUntil);
     };
 
-    // Generate a lotteryId
+    // Generate a poolId
     let now = Time.now();
     let hash = SHA224.Digest();
     hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(preparationCount))));
@@ -193,7 +193,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   };
 
   // 
-  // create a lottery
+  // create a pool
   //
   type CreateSuccess = Text;
   type CreateError = {
@@ -205,39 +205,39 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
     switch (preparations.get(caller)) {
 
-      case (?lottery) {
+      case (?pool) {
 
         let canisterAccount = Principal.fromActor(this);
         // check the ownership of the token
-        let balance = await EXT.balance(lottery.token.canisterId, canisterAccount, lottery.token.index);
+        let balance = await EXT.balance(pool.token.canisterId, canisterAccount, pool.token.index);
         if (balance != 1) {
           return #err(#NotTransferred);
         };
 
-        // Associate a lottery index with a lottery id
-        lotteryIds.put(lotteryCount, lottery.id);
-        lotteryCount += 1;
+        // Associate a pool index with a pool id
+        poolIds.put(poolCount, pool.id);
+        poolCount += 1;
 
-        lotteries.put(lottery.id, lottery);
+        pools.put(pool.id, pool);
         preparations.delete(caller);
 
-        // Check if the lottery creator owns existing rooms. If they do, append the lottery ID to the existing array of lotteries. If not, create
-        // an array of owned lotteries for the lottery creator.
-        switch (lotteryIdsByOwner.get(caller)) {
-          case (?lotteryIds) {
+        // Check if the pool creator owns existing rooms. If they do, append the pool ID to the existing array of pools. If not, create
+        // an array of owned pools for the pool creator.
+        switch (poolIdsByOwner.get(caller)) {
+          case (?poolIds) {
             let appended : Buffer.Buffer<Text> = Buffer.Buffer(0);
-            for (lotteryId in lotteryIds.vals()) {
-              appended.add(lotteryId);
+            for (poolId in poolIds.vals()) {
+              appended.add(poolId);
             };
-            appended.add(lottery.id);
-            lotteryIdsByOwner.put(caller, appended.toArray());
+            appended.add(pool.id);
+            poolIdsByOwner.put(caller, appended.toArray());
           };
           case null {
-            lotteryIdsByOwner.put(caller, [lottery.id]);
+            poolIdsByOwner.put(caller, [pool.id]);
           };
         };
 
-        return #ok(lottery.id);
+        return #ok(pool.id);
 
       };
       case null {
@@ -254,38 +254,38 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   //
   type LockSuccess = LockedTicket;
   type LockError = {
-    #LotteryNotFound;
+    #PoolNotFound;
     #CalledByOwner;
     #Full;
     #Ended;
   };
   type LockResult = Result.Result<LockSuccess, LockError>;
-  public shared({caller}) func lock(lotteryId: Text, count: Nat): async LockResult {
+  public shared({caller}) func lock(poolId: Text, count: Nat): async LockResult {
 
-    switch (lotteries.get(lotteryId)) {
+    switch (pools.get(poolId)) {
       case null { 
-        return #err(#LotteryNotFound);
+        return #err(#PoolNotFound);
       };
-      case (?lottery) {
+      case (?pool) {
 
-        if (caller == lottery.owner) {
+        if (caller == pool.owner) {
           return #err(#CalledByOwner);
         };
 
         // check if the count is valid
-        let issued = getTicketCount(lottery, true);
-        if (issued + count > lottery.supply) {
+        let issued = getTicketCount(pool, true);
+        if (issued + count > pool.supply) {
           return #err(#Full);
         };
 
         // check if it's still active ot not
-        if (Time.now() > lottery.activeUntil) {
+        if (Time.now() > pool.activeUntil) {
           return #err(#Ended);
         };
 
         var lockedTicket: ?LockedTicket = null;
 
-        for (ticket in lottery.lockedTickets.vals()) {
+        for (ticket in pool.lockedTickets.vals()) {
         
           // if the caller matches the participant of a ticket & the ticket is still valid, returns the ticket
           if (ticket.ticket.participant == caller and Time.now() < ticket.expiredAt) {
@@ -300,7 +300,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
           };
           
           case null {
-            let ticketId = lotteryId # "-" # Principal.toText(caller) # Int.toText(Time.now());
+            let ticketId = poolId # "-" # Principal.toText(caller) # Int.toText(Time.now());
 
             let lockedTicket = {
               ticket = {
@@ -313,22 +313,22 @@ shared({caller = actorOwner}) actor class Lottery() = this {
             };
 
             let appendedLockedTickets : Buffer.Buffer<LockedTicket> = Buffer.Buffer(0);
-            for (ticket in lottery.lockedTickets.vals()) {
+            for (ticket in pool.lockedTickets.vals()) {
               appendedLockedTickets.add(ticket);
             };
             appendedLockedTickets.add(lockedTicket);
 
-            lotteries.put(lotteryId, {
-              id = lottery.id;
-              supply = lottery.supply;
-              price = lottery.price;
-              activeUntil = lottery.activeUntil;
-              owner = lottery.owner;
-              token = lottery.token;
-              tickets = lottery.tickets;
+            pools.put(poolId, {
+              id = pool.id;
+              supply = pool.supply;
+              price = pool.price;
+              activeUntil = pool.activeUntil;
+              owner = pool.owner;
+              token = pool.token;
+              tickets = pool.tickets;
               lockedTickets = appendedLockedTickets.toArray();
-              status = lottery.status;
-              createdAt = lottery.createdAt;
+              status = pool.status;
+              createdAt = pool.createdAt;
             });
             return #ok(lockedTicket);
           };
@@ -341,29 +341,29 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   // 
   // unlock a ticket (this function is called after a payment is made)
   //
-  type UnLockSuccess = Lottery;
+  type UnLockSuccess = Pool;
   type UnLockError = {
-    #LotteryNotFound;
+    #PoolNotFound;
     #NotLocked;
     #Expired;
     #Unpaied;
   };
   type UnLockResult = Result.Result<UnLockSuccess, UnLockError>;
-  public shared({caller}) func unlock(lotteryId: Text, ticketId: Text): async UnLockResult {
+  public shared({caller}) func unlock(poolId: Text, ticketId: Text): async UnLockResult {
 
     let canisterAccount = Principal.fromActor(this);
 
-    switch (lotteries.get(lotteryId)) {
+    switch (pools.get(poolId)) {
       case null { 
-        return #err(#LotteryNotFound);
+        return #err(#PoolNotFound);
       };
-      case (?lottery) {
+      case (?pool) {
 
         var unlocked: ?Ticket = null; 
         let lockedTickets : Buffer.Buffer<LockedTicket> = Buffer.Buffer(0);
         var error: UnLockError = #NotLocked;
         
-        for (locketTicket in lottery.lockedTickets.vals()) {
+        for (locketTicket in pool.lockedTickets.vals()) {
           let ticket = locketTicket.ticket;
           var found = false;
           if (ticket.participant == caller and ticket.ticketId == ticketId) {
@@ -371,7 +371,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
             if (locketTicket.expiredAt < Time.now()) {
               // the ticket is expired
               error := #Expired;
-            } else if (await ICP.hasTransferred(canisterAccount, ticket.ticketId, lottery.price * ticket.count)) {
+            } else if (await ICP.hasTransferred(canisterAccount, ticket.ticketId, pool.price * ticket.count)) {
               // the payment was made successfully
               unlocked := ?ticket;
               found := true;
@@ -394,26 +394,26 @@ shared({caller = actorOwner}) actor class Lottery() = this {
           case (?ticket) {
 
             let appendedTickets : Buffer.Buffer<Ticket> = Buffer.Buffer(0);
-            for (ticket in lottery.tickets.vals()) {
+            for (ticket in pool.tickets.vals()) {
               appendedTickets.add(ticket);
             };
             appendedTickets.add(ticket);
 
-            let newLottery: Lottery = {
-              id = lottery.id;
-              supply = lottery.supply;
-              price = lottery.price;
-              activeUntil = lottery.activeUntil;
-              owner = lottery.owner;
-              token = lottery.token;
+            let newPool: Pool = {
+              id = pool.id;
+              supply = pool.supply;
+              price = pool.price;
+              activeUntil = pool.activeUntil;
+              owner = pool.owner;
+              token = pool.token;
               tickets = appendedTickets.toArray();
               lockedTickets = lockedTickets.toArray();
-              status = lottery.status;
-              createdAt = lottery.createdAt;
+              status = pool.status;
+              createdAt = pool.createdAt;
             };
 
-            lotteries.put(lotteryId, newLottery);
-            return #ok(newLottery);
+            pools.put(poolId, newPool);
+            return #ok(newPool);
           }
         };
 
@@ -424,26 +424,26 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   // 
   // refund ICP
   //
-  public shared({caller}) func refundICP(lotteryId: Text, ticketId: Text): async ?ICP.TransferResult {
-    switch (lotteries.get(lotteryId)) {
+  public shared({caller}) func refundICP(poolId: Text, ticketId: Text): async ?ICP.TransferResult {
+    switch (pools.get(poolId)) {
       case null { 
         return null;
       };
-      case (?lottery) {
+      case (?pool) {
 
         Debug.print("IN");
 
         var allTickets : Buffer.Buffer<Ticket> = Buffer.Buffer(0);
-        // purchased tickets can be refuneded only when the lottery has not been sold out
-        if (lottery.status == #InsufficientParticipants) {
-          for (ticket in lottery.tickets.vals()) {
+        // purchased tickets can be refuneded only when the pool has not been sold out
+        if (pool.status == #InsufficientParticipants) {
+          for (ticket in pool.tickets.vals()) {
             allTickets.add(ticket);
           };
         };
 
-        // locked tickets can be refuneded after the lottery has ended
-        if (lottery.status != #Active) {
-          for (ticket in lottery.lockedTickets.vals()) {
+        // locked tickets can be refuneded after the pool has ended
+        if (pool.status != #Active) {
+          for (ticket in pool.lockedTickets.vals()) {
             allTickets.add(ticket.ticket);
           };
         };
@@ -510,32 +510,32 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     settlementBuffer := buffer;
   };
 
-  // get a lottery count
+  // get a pool count
   public func getTotalCount(): async Nat {
-    return lotteryCount;
+    return poolCount;
   };
 
-  // get lottery
-  public shared({caller}) func getLottery(id: Text): async ?Lottery {
+  // get pool
+  public shared({caller}) func getPool(id: Text): async ?Pool {
 
-    switch (lotteries.get(id)) {
+    switch (pools.get(id)) {
       case null { return null; };
-      case (?lottery) {
+      case (?pool) {
 
-        if (lottery.activeUntil < Time.now() and lottery.status == #Active) {
+        if (pool.activeUntil < Time.now() and pool.status == #Active) {
           // settle
-          ignore await settle(lottery.id);
-          return lotteries.get(id);
+          ignore await settle(pool.id);
+          return pools.get(id);
         } else {
           // active or ended
-          return ?lottery;
+          return ?pool;
         }
       };
     };
   };
 
-  // get lotteries
-  public shared({caller}) func getLotteries(since: Nat, to: Nat): async [Lottery] {
+  // get pools
+  public shared({caller}) func getPools(since: Nat, to: Nat): async [Pool] {
 
     if (to <= since) {
       throw Error.reject("`to` must be grather than `since`.");
@@ -543,17 +543,17 @@ shared({caller = actorOwner}) actor class Lottery() = this {
       throw Error.reject("You can't fetch more than 100 items at once.");
     };
     
-    let arr : Buffer.Buffer<Lottery> = Buffer.Buffer(0);
+    let arr : Buffer.Buffer<Pool> = Buffer.Buffer(0);
     for (i in Iter.range(since, to)) {
-      let lotteryId = lotteryIds.get(i);
-      switch (lotteryId) {
+      let poolId = poolIds.get(i);
+      switch (poolId) {
         case null { };
-        case (?lotteryId) {
-          let lottery = lotteries.get(lotteryId);
-          switch (lottery) {
+        case (?poolId) {
+          let pool = pools.get(poolId);
+          switch (pool) {
             case null {};
-            case (?lottery) {
-              arr.add(lottery);
+            case (?pool) {
+              arr.add(pool);
             };
           };
         };
@@ -562,21 +562,21 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     return arr.toArray();
   };
 
-  // get a prepared lottery
-  public shared({caller}) func getPreparation(): async ?Lottery {
+  // get a prepared pool
+  public shared({caller}) func getPreparation(): async ?Pool {
     return preparations.get(caller);
   };
 
-  // cancel a prepared lottery
+  // cancel a prepared pool
   public shared({caller}) func cancelPreparation(): async Bool {
     switch (preparations.get(caller)) {
       case null { return false; };
-      case (?lottery) {
+      case (?pool) {
 
         // Transfer back the nft to the owner;
-        let balance = await EXT.balance(lottery.token.canisterId, Principal.fromActor(this), lottery.token.index);
+        let balance = await EXT.balance(pool.token.canisterId, Principal.fromActor(this), pool.token.index);
         if (balance == 1) {
-          ignore await EXT.transfer(lottery.token.canisterId, Principal.fromActor(this), lottery.owner, lottery.token.index);
+          ignore await EXT.transfer(pool.token.canisterId, Principal.fromActor(this), pool.owner, pool.token.index);
         };
 
         preparations.delete(caller);
@@ -584,6 +584,13 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
       };
     };
+  };
+
+  public shared({caller}) func setCreators(_creators: [Principal]): async () {
+    if (ownerPrincipal != caller) {
+      throw Error.reject("This method can be called only by the owner.");
+    };
+    creators := _creators;
   };
 
   public func getCreators(): async [Principal] {
@@ -594,17 +601,17 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     return Time.now();
   };
 
-  private func getTicketCount(lottery: Lottery, includeLockedTickets: Bool): Nat {
+  private func getTicketCount(pool: Pool, includeLockedTickets: Bool): Nat {
 
     var count = 0;
 
-    for (ticket in lottery.tickets.vals()) {
+    for (ticket in pool.tickets.vals()) {
       count += ticket.count;
     };
 
     if (includeLockedTickets) {
 
-      for (locketTicket in lottery.lockedTickets.vals()) {
+      for (locketTicket in pool.lockedTickets.vals()) {
         // Ignore expired ones
         if (Time.now() < locketTicket.expiredAt) {
           count += locketTicket.ticket.count;
@@ -617,47 +624,47 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
 
   // 
-  // settle a lottery
+  // settle a pool
   //
-  private func settle(lotteryId: Text): async ?LotteryStatus {
+  private func settle(poolId: Text): async ?PoolStatus {
 
-    Debug.print("settle " # lotteryId);
+    Debug.print("settle " # poolId);
 
-    switch (lotteries.get(lotteryId)) {
+    switch (pools.get(poolId)) {
       case null { 
         return null;
       };
-      case (?lottery) {
+      case (?pool) {
 
         let now = Time.now();
 
-        if (lottery.activeUntil + settlementBuffer < now) {
+        if (pool.activeUntil + settlementBuffer < now) {
 
-          if (lottery.status != #Active) {
+          if (pool.status != #Active) {
 
             // Already finished
             Debug.print("Already finished");
-            return ?lottery.status;
+            return ?pool.status;
 
-          } else if (getTicketCount(lottery, false) < lottery.supply) {
+          } else if (getTicketCount(pool, false) < pool.supply) {
 
             // Transfer back the nft to the owner;
-            ignore await EXT.transfer(lottery.token.canisterId, Principal.fromActor(this), lottery.owner, lottery.token.index);
+            ignore await EXT.transfer(pool.token.canisterId, Principal.fromActor(this), pool.owner, pool.token.index);
             // Remove from the token list
-            let tokenId = lottery.token.canisterId # "-" # Nat.toText(lottery.token.index);
+            let tokenId = pool.token.canisterId # "-" # Nat.toText(pool.token.index);
             nfts.delete(tokenId);
 
-            lotteries.put(lotteryId, {
-              id = lottery.id;
-              supply = lottery.supply;
-              price = lottery.price;
-              activeUntil = lottery.activeUntil;
-              owner = lottery.owner;
-              token = lottery.token;
-              tickets = lottery.tickets;
-              lockedTickets = lottery.lockedTickets;
+            pools.put(poolId, {
+              id = pool.id;
+              supply = pool.supply;
+              price = pool.price;
+              activeUntil = pool.activeUntil;
+              owner = pool.owner;
+              token = pool.token;
+              tickets = pool.tickets;
+              lockedTickets = pool.lockedTickets;
               status = #InsufficientParticipants;
-              createdAt = lottery.createdAt;
+              createdAt = pool.createdAt;
             });
             Debug.print("Insufficient Participants");
 
@@ -667,7 +674,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
             // Select winner;
             var participants : Buffer.Buffer<Principal> = Buffer.Buffer(0);
-            for (ticket in lottery.tickets.vals()) {
+            for (ticket in pool.tickets.vals()) {
               for (i in Iter.range(0, ticket.count)) {
                 participants.add(ticket.participant);
               }
@@ -701,22 +708,22 @@ shared({caller = actorOwner}) actor class Lottery() = this {
                 
                 let winner = candidates[index];
                 // Transfer the nft to a winner;
-                ignore await EXT.transfer(lottery.token.canisterId, Principal.fromActor(this), winner, lottery.token.index);
+                ignore await EXT.transfer(pool.token.canisterId, Principal.fromActor(this), winner, pool.token.index);
                 // Remove from the token list
-                let tokenId = lottery.token.canisterId # "-" # Nat.toText(lottery.token.index);
+                let tokenId = pool.token.canisterId # "-" # Nat.toText(pool.token.index);
                 nfts.delete(tokenId);
 
-                lotteries.put(lotteryId, {
-                  id = lottery.id;
-                  supply = lottery.supply;
-                  price = lottery.price;
-                  activeUntil = lottery.activeUntil;
-                  owner = lottery.owner;
-                  token = lottery.token;
-                  tickets = lottery.tickets;
-                  lockedTickets = lottery.lockedTickets;
+                pools.put(poolId, {
+                  id = pool.id;
+                  supply = pool.supply;
+                  price = pool.price;
+                  activeUntil = pool.activeUntil;
+                  owner = pool.owner;
+                  token = pool.token;
+                  tickets = pool.tickets;
+                  lockedTickets = pool.lockedTickets;
                   status = #Selected({winner});
-                  createdAt = lottery.createdAt;
+                  createdAt = pool.createdAt;
                 });
                 Debug.print("Selected");
                 return ?#Selected({winner});
@@ -725,7 +732,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
           }
 
         } else {
-          return ?lottery.status;
+          return ?pool.status;
         }
 
       };
@@ -746,18 +753,18 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   // upgrade
   system func preupgrade() {
     preparationsEntries := Iter.toArray(preparations.entries());
-    lotteryEntries := Iter.toArray(lotteries.entries());
-    lotteryIdsByOwnerEntries := Iter.toArray(lotteryIdsByOwner.entries());
+    poolEntries := Iter.toArray(pools.entries());
+    poolIdsByOwnerEntries := Iter.toArray(poolIdsByOwner.entries());
     nftsEntries := Iter.toArray(nfts.entries());
-    lotteryIdsEntries := Iter.toArray(lotteryIds.entries());
+    poolIdsEntries := Iter.toArray(poolIds.entries());
   };
 
   system func postupgrade() {
     preparationsEntries := [];
-    lotteryEntries := [];
-    lotteryIdsByOwnerEntries := [];
+    poolEntries := [];
+    poolIdsByOwnerEntries := [];
     nftsEntries := [];
-    lotteryIdsEntries := [];
+    poolIdsEntries := [];
   };
 
 }

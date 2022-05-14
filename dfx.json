@@ -2,9 +2,9 @@
   "version": 1,
   "dfx": "0.9.3",
   "canisters": {
-    "lottery": {
+    "SolarFlares": {
       "type": "motoko",
-      "main": "backend/lottery/main.mo"
+      "main": "backend/SolarFlares/main.mo"
     },
     "erc721": {
       "type": "motoko",

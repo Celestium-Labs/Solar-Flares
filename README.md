@@ -82,5 +82,5 @@ dfx canister call ledger account_balance '(record { account = '$(python3 -c 'pri
 dfx deploy erc721 --argument="(principal \"sajsc-opcbj-2kasj-vyxv5-j5adf-6h3j4-zr6st-jjdxk-u6xw2-qzl2k-iqe\")"
 
 
-dfx deploy lottery
-dfx canister call lottery setOwner "(principal \"sajsc-opcbj-2kasj-vyxv5-j5adf-6h3j4-zr6st-jjdxk-u6xw2-qzl2k-iqe\")"
+dfx deploy SolarFlares
+dfx canister call SolarFlares setOwner "(principal \"sajsc-opcbj-2kasj-vyxv5-j5adf-6h3j4-zr6st-jjdxk-u6xw2-qzl2k-iqe\")"

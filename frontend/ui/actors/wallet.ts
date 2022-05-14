@@ -1,6 +1,6 @@
 import { getCanisterIds } from './dab';
 import { canisterId as ledgerCanisterId } from "../declarations/ledger"
-import { canisterId as lotteryCanisterId } from "../declarations/lottery"
+import { canisterId as solarFlaresCanisterId } from "../declarations/SolarFlares"
 import { StoicIdentity } from "../services/stoicIdentityType";
 export { initStoicIdentity } from "../services/stoicIdentityType";
 import { Identity, HttpAgent, Agent } from '@dfinity/agent';
@@ -56,7 +56,7 @@ export async function login(wallet: 'plug' | 'stoic'): Promise<string | 'failed'
       return 'failed';
     }
 
-    const whitelists: string [] = [ledgerCanisterId ?? '', lotteryCanisterId ?? ''];
+    const whitelists: string [] = [ledgerCanisterId ?? '', solarFlaresCanisterId ?? ''];
     if (process.env.NEXT_PUBLIC_ENV != 'prod') {
       whitelists.push(process.env.NEXT_PUBLIC_ERC721_CANISTER_ID ?? '');
     }
@@ -119,7 +119,7 @@ export async function isLogged(): Promise<string | null> {
     if (logged) {
 
       Loader.show()
-      const whitelists: string [] = [ledgerCanisterId ?? '', lotteryCanisterId ?? ''];
+      const whitelists: string [] = [ledgerCanisterId ?? '', solarFlaresCanisterId ?? ''];
       if (process.env.NEXT_PUBLIC_ENV != 'prod') {
         whitelists.push(process.env.NEXT_PUBLIC_ERC721_CANISTER_ID ?? '');
       }

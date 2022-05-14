@@ -1,16 +1,16 @@
 import { Actor, HttpAgent } from "@dfinity/agent";
 
 // Imports and re-exports candid interface
-import { idlFactory } from './lottery.did.js';
-export { idlFactory } from './lottery.did.js';
+import { idlFactory } from './SolarFlares.did.js';
+export { idlFactory } from './SolarFlares.did.js';
 // CANISTER_ID is replaced by webpack based on node environment
-export const canisterId = process.env.LOTTERY_CANISTER_ID;
+export const canisterId = process.env.NEXT_PUBLIC_SOLARFLARES_CANISTER_ID;
 
 /**
  * 
  * @param {string | import("@dfinity/principal").Principal} canisterId Canister ID of Agent
  * @param {{agentOptions?: import("@dfinity/agent").HttpAgentOptions; actorOptions?: import("@dfinity/agent").ActorConfig}} [options]
- * @return {import("@dfinity/agent").ActorSubclass<import("./lottery.did.js")._SERVICE>}
+ * @return {import("@dfinity/agent").ActorSubclass<import("./SolarFlares.did.js")._SERVICE>}
  */
  export const createActor = (canisterId, options) => {
   const agent = new HttpAgent({ ...options?.agentOptions });

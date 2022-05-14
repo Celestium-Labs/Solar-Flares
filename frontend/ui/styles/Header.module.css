@@ -30,10 +30,10 @@
   color: #fcfcfc;
   border-radius: 2px;
   text-align: center;
-  width: 120px;
-  height: 40px;
-  line-height: 40px;
-  padding: 0 5px;
+  width: 150px;
+  height: 46px;
+  line-height: 46px;
+  padding: 0 10px;
   text-overflow: ellipsis;
   overflow: hidden;
   cursor: pointer;

@@ -1,8 +1,8 @@
 import { useState, useEffect, useContext } from "react";
-import styles from '../styles/components/Lottery.module.css'
+import styles from '../styles/components/Pool.module.css'
 import { Context } from "../services/context";
 import Link from 'next/link'
-import { Lottery, } from '../actors/lottery';
+import { Pool, } from '../actors/solarFlares';
 import { getNFTDetail } from '../actors/dab';
 import { NFTDetails } from '@psychedelic/dab-js'
 import differenceInMinutes from 'date-fns/differenceInMinutes'
@@ -11,10 +11,10 @@ import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 
 type IProps = {
-  lottery: Lottery,
+  pool: Pool,
 }
 
-export default function Component({ lottery }: IProps) {
+export default function Component({ pool }: IProps) {
 
   const [nft, setNft] = useState<NFTDetails | null>(null);
 
@@ -22,14 +22,14 @@ export default function Component({ lottery }: IProps) {
 
     console.log('in')
 
-    getNFTDetail(lottery.token.canisterId, 'EXT', parseInt(lottery.token.index.toString())).then(nft => {
+    getNFTDetail(pool.token.canisterId, 'EXT', parseInt(pool.token.index.toString())).then(nft => {
       setNft(nft);
     });
 
-  }, [lottery]);
+  }, [pool]);
 
   // console.log('----')
-  // console.log(lottery.activeUntil)
+  // console.log(pool.activeUntil)
   // console.log(new Date().getTime())
 
   if (!nft) {
@@ -37,7 +37,7 @@ export default function Component({ lottery }: IProps) {
   }
 
   const now = new Date();
-  const activeUntil = new Date(parseInt((lottery.activeUntil / BigInt(1000000)).toString()));
+  const activeUntil = new Date(parseInt((pool.activeUntil / BigInt(1000000)).toString()));
   const name = `${nft.name} #${nft.index}`
   const status = now < activeUntil ? 'Active' : 'Finished';
 
@@ -66,7 +66,7 @@ export default function Component({ lottery }: IProps) {
   const diff = createDiff();
 
   return <div className={styles.container}>
-    <Link href={`/nft/?id=${lottery.id}`}>
+    <Link href={`/pool/?id=${pool.id}`}>
       <a>
         <img src={nft.url} alt={name} />
 
@@ -74,7 +74,7 @@ export default function Component({ lottery }: IProps) {
           <p className={styles.name}>{name}</p>
           <p className={`${styles.status} ${status == 'Active' ? styles.active : ''}`}>{status}</p>
           <div className={styles.priceContainer}>
-            <p className={styles.price}>{(parseFloat(lottery.price.toString()) / 100000000).toFixed(2)} ICP</p>
+            <p className={styles.price}>{(parseFloat(pool.price.toString()) / 100000000).toFixed(2)} ICP</p>
             <p className={styles.date}>{diff ? ('Ends in ' + diff) : 'Ended'}</p>
           </div>
         </div>

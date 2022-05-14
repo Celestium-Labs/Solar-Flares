@@ -6,7 +6,7 @@ type UnLockSuccess =
    lockedTickets: vec LockedTicket;
    owner: principal;
    price: nat;
-   status: LotteryStatus;
+   status: PoolStatus;
    supply: nat;
    tickets: vec Ticket;
    token: Token;
@@ -19,8 +19,8 @@ type UnLockResult =
 type UnLockError = 
  variant {
    Expired;
-   LotteryNotFound;
    NotLocked;
+   PoolNotFound;
    Unpaied;
  };
 type TransferSuccess = record {blockHeight: nat64;};
@@ -72,7 +72,13 @@ type PrepareError =
    NotAllowed;
    NotOwned;
  };
-type Lottery__1 = 
+type PoolStatus = 
+ variant {
+   Active;
+   InsufficientParticipants;
+   Selected: record {winner: principal;};
+ };
+type Pool = 
  record {
    activeUntil: int;
    createdAt: int;
@@ -80,16 +86,10 @@ type Lottery__1 =
    lockedTickets: vec LockedTicket;
    owner: principal;
    price: nat;
-   status: LotteryStatus;
+   status: PoolStatus;
    supply: nat;
    tickets: vec Ticket;
    token: Token;
- };
-type LotteryStatus = 
- variant {
-   Active;
-   InsufficientParticipants;
-   Selected: record {winner: principal;};
  };
 type LockedTicket = 
  record {
@@ -111,7 +111,7 @@ type LockError =
    CalledByOwner;
    Ended;
    Full;
-   LotteryNotFound;
+   PoolNotFound;
  };
 type CreateSuccess = text;
 type CreateResult = 
@@ -131,9 +131,10 @@ service : {
   cancelPreparation: () -> (bool);
   create: () -> (CreateResult);
   getCreators: () -> (vec principal);
-  getLotteries: (nat, nat) -> (vec Lottery__1);
-  getLottery: (text) -> (opt Lottery__1);
-  getPreparation: () -> (opt Lottery__1);
+  getLotteries: (nat, nat) -> (vec Pool);
+  getPool: (text) -> (opt Pool);
+  getPreparation: () -> (opt Pool);
+  getTimestamp: () -> (int);
   getTotalCount: () -> (nat);
   lock: (text, nat) -> (LockResult);
   prepare: (nat, nat, nat, text, nat, text) -> (PrepareResult);

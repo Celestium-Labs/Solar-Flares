@@ -1,11 +1,11 @@
-import { createActor, canisterId, idlFactory } from "../declarations/lottery"
+import { createActor, canisterId, idlFactory } from "../declarations/SolarFlares"
 import { Actor, ActorSubclass } from '@dfinity/agent';
-import { _SERVICE, Lottery__1 } from "../declarations/lottery/lottery.did"
+import { _SERVICE, Pool as Pool1 } from "../declarations/SolarFlares/SolarFlares.did"
 import { createAgent } from './wallet';
 
 type Interface = ActorSubclass<_SERVICE>
 
-export type Lottery = Lottery__1;
+export type Pool = Pool1;
 
 const options = {
   agentOptions: {
@@ -13,7 +13,7 @@ const options = {
   }
 }
 
-export default class LotteryActor {
+export default class SolarFlaresActor {
 
   ic = (window as any).ic;
   actor: Interface | null = null;
@@ -46,29 +46,29 @@ export default class LotteryActor {
     return await this.actor.create();
   }
 
-  async lock(lotteryId: string, count: number) {
+  async lock(poolId: string, count: number) {
     if (!this.actor) { return null }
-    return await this.actor.lock(lotteryId, BigInt(count));
+    return await this.actor.lock(poolId, BigInt(count));
   }
 
-  async unlock(lotteryId: string, ticketId: string) {
+  async unlock(poolId: string, ticketId: string) {
     if (!this.actor) { return null }
-    return await this.actor.unlock(lotteryId, ticketId);
+    return await this.actor.unlock(poolId, ticketId);
   }
 
-  async refundICP(lotteryId: string, ticketId: string) {
+  async refundICP(poolId: string, ticketId: string) {
     if (!this.actor) { return null }
-    return await this.actor.refundICP(lotteryId, ticketId);
+    return await this.actor.refundICP(poolId, ticketId);
   }
 
-  async getLotteries(since: number, to: number) {
+  async getPools(since: number, to: number) {
     if (!this.anonymous) { return null }
-    return await this.anonymous.getLotteries(BigInt(since), BigInt(to));
+    return await this.anonymous.getPools(BigInt(since), BigInt(to));
   }
 
-  async getLottery(id: string) {
+  async getPool(id: string) {
     if (!this.anonymous) { return null }
-    return await this.anonymous.getLottery(id);
+    return await this.anonymous.getPool(id);
   }
 
   async getTotalCount() {

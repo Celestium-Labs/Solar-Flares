@@ -6,7 +6,7 @@ type UnLockSuccess =
    lockedTickets: vec LockedTicket;
    owner: principal;
    price: nat;
-   status: LotteryStatus;
+   status: PoolStatus;
    supply: nat;
    tickets: vec Ticket;
    token: Token;
@@ -19,8 +19,8 @@ type UnLockResult =
 type UnLockError = 
  variant {
    Expired;
-   LotteryNotFound;
    NotLocked;
+   PoolNotFound;
    Unpaied;
  };
 type TransferSuccess = record {blockHeight: nat64;};
@@ -72,7 +72,13 @@ type PrepareError =
    NotAllowed;
    NotOwned;
  };
-type Lottery__1 = 
+type PoolStatus = 
+ variant {
+   Active;
+   InsufficientParticipants;
+   Selected: record {winner: principal;};
+ };
+type Pool = 
  record {
    activeUntil: int;
    createdAt: int;
@@ -80,36 +86,10 @@ type Lottery__1 =
    lockedTickets: vec LockedTicket;
    owner: principal;
    price: nat;
-   status: LotteryStatus;
+   status: PoolStatus;
    supply: nat;
    tickets: vec Ticket;
    token: Token;
- };
-type LotteryStatus = 
- variant {
-   Active;
-   InsufficientParticipants;
-   Selected: record {winner: principal;};
- };
-type Lottery = 
- service {
-   acceptCycles: () -> ();
-   availableCycles: () -> (nat) query;
-   cancelPreparation: () -> (bool);
-   create: () -> (CreateResult);
-   getCreators: () -> (vec principal);
-   getLotteries: (nat, nat) -> (vec Lottery__1);
-   getLottery: (text) -> (opt Lottery__1);
-   getPreparation: () -> (opt Lottery__1);
-   getTimestamp: () -> (int);
-   getTotalCount: () -> (nat);
-   lock: (text, nat) -> (LockResult);
-   prepare: (nat, nat, nat, text, nat, text) -> (PrepareResult);
-   refundICP: (text, text) -> (opt TransferResult);
-   setMinimalDuration: (nat) -> ();
-   setOwner: (principal) -> ();
-   setSettlementBuffer: (nat) -> ();
-   unlock: (text, text) -> (UnLockResult);
  };
 type LockedTicket = 
  record {
@@ -131,7 +111,7 @@ type LockError =
    CalledByOwner;
    Ended;
    Full;
-   LotteryNotFound;
+   PoolNotFound;
  };
 type CreateSuccess = text;
 type CreateResult = 
@@ -145,4 +125,22 @@ type CreateError =
    NotTransferred;
  };
 type BlockIndex = nat64;
-service : () -> Lottery
+service : {
+  acceptCycles: () -> ();
+  availableCycles: () -> (nat) query;
+  cancelPreparation: () -> (bool);
+  create: () -> (CreateResult);
+  getCreators: () -> (vec principal);
+  getPool: (text) -> (opt Pool);
+  getPools: (nat, nat) -> (vec Pool);
+  getPreparation: () -> (opt Pool);
+  getTimestamp: () -> (int);
+  getTotalCount: () -> (nat);
+  lock: (text, nat) -> (LockResult);
+  prepare: (nat, nat, nat, text, nat, text) -> (PrepareResult);
+  refundICP: (text, text) -> (opt TransferResult);
+  setMinimalDuration: (nat) -> ();
+  setOwner: (principal) -> ();
+  setSettlementBuffer: (nat) -> ();
+  unlock: (text, text) -> (UnLockResult);
+}

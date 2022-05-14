@@ -1,8 +1,6 @@
 // Version: 1.0.0
 type LockedTicket = {expiredAt : Int; ticket : Ticket};
-type LotteryStatus =
-  {#Active; #InsufficientParticipants; #Selected : {winner : Principal}};
-type Lottery__1 =
+type Pool =
   {
     activeUntil : Int;
     createdAt : Int;
@@ -10,11 +8,13 @@ type Lottery__1 =
     lockedTickets : [LockedTicket];
     owner : Principal;
     price : Nat;
-    status : LotteryStatus;
+    status : PoolStatus;
     supply : Nat;
     tickets : [Ticket];
     token : Token
   };
+type PoolStatus =
+  {#Active; #InsufficientParticipants; #Selected : {winner : Principal}};
 type SubAccount = Blob;
 type Ticket =
   {
@@ -26,14 +26,14 @@ type Ticket =
 type Token = {canisterId : Text; index : Nat; standard : Text};
 actor {
   stable var creators : [Principal];
-  stable var lotteryCount : Nat;
-  stable var lotteryEntries : [(Text, Lottery__1)];
-  stable var lotteryIdsByOwnerEntries : [(Principal, [Text])];
-  stable var lotteryIdsEntries : [(Int, Text)];
   stable var minimalDuration : Nat;
   stable var nftsEntries : [(Text, Text)];
   stable var ownerPrincipal : Principal;
+  stable var poolCount : Nat;
+  stable var poolEntries : [(Text, Pool)];
+  stable var poolIdsByOwnerEntries : [(Principal, [Text])];
+  stable var poolIdsEntries : [(Int, Text)];
   stable var preparationCount : Nat;
-  stable var preparationsEntries : [(Principal, Lottery__1)];
+  stable var preparationsEntries : [(Principal, Pool)];
   stable var settlementBuffer : Nat
 };

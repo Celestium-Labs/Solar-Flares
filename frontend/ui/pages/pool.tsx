@@ -4,17 +4,14 @@ import { useEffect, useContext, useState, useCallback } from 'react'
 import styles from '../styles/Room.module.css'
 import { Layout } from '../components/Layout'
 import { useRouter } from 'next/router'
-import LotteryActor from '../actors/lottery';
-import LedgerActor, { TRANSFER_FEE } from '../actors/ledger';
+import PoolActor from '../actors/solarFlares';
 
-import { Lottery__1 as Lottery } from '../declarations/lottery/lottery.did'
+import { Pool } from '../declarations/SolarFlares/SolarFlares.did'
 import Loader from '../components/Loader';
 import { Context } from "../services/context";
-import { Principal } from '@dfinity/principal'
 import { NFTDetails } from '@psychedelic/dab-js'
 import EXTNFTActor from '../actors/nft/ext';
 import { getNFTDetail } from '../actors/dab';
-import Swap from '../components/svg/swap';
 import { principalToAccountIdentifier, fromHexString, principalToAccountIdentifierFromSubAccountArray } from '../utils/ext'
 import Ticket from '../components/Ticket'
 import PurchaseConfirmation from '../components/PurchaseConfirmation';
@@ -31,23 +28,23 @@ const Page: NextPage = () => {
 
   const { accountIdentifier, principal } = useContext(Context);
 
-  const [lottery, setLottery] = useState<Lottery | null>(null);
+  const [pool, setPool] = useState<Pool | null>(null);
   const [nft, setNft] = useState<NFTDetails | null>(null);
 
   const [loaded, setLoaded] = useState(false);
   const [ticketNum, setTicketNum] = useState<number | undefined>(1);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const fetch = useCallback(async (lotteryId: string | null, shoLoader: boolean = false) => {
+  const fetch = useCallback(async (poolId: string | null, shoLoader: boolean = false) => {
 
-    if (lotteryId == null) { return }
+    if (poolId == null) { return }
 
     if (shoLoader) {
       Loader.show();
     }
 
-    console.log('fetch', lotteryId)
-    const actor = new LotteryActor();
+    console.log('fetch', poolId)
+    const actor = new PoolActor();
     await actor.createActor();
     console.log('createActor')
 
@@ -62,13 +59,13 @@ const Page: NextPage = () => {
       }
     }
 
-    const lotteries = await actor.getLottery(lotteryId);
-    console.log('lotteries', lotteries);
-    if (lotteries && lotteries.length > 0) {
-      const lottery = lotteries[0] as Lottery;
-      setLottery(lottery);
+    const pools = await actor.getPool(poolId);
+    console.log('pools', pools);
+    if (pools && pools.length > 0) {
+      const pool = pools[0] as Pool;
+      setPool(pool);
 
-      const nft = await getNFTDetail(lottery.token.canisterId, 'EXT', parseInt(lottery.token.index.toString()));
+      const nft = await getNFTDetail(pool.token.canisterId, 'EXT', parseInt(pool.token.index.toString()));
       setNft(nft);
     }
     setLoaded(true);
@@ -123,53 +120,52 @@ const Page: NextPage = () => {
 
   let dom = <div></div>
 
-  if (nft && lottery) {
+  if (nft && pool) {
 
-    const sold = lottery.tickets.reduce((prevValue, currentValue, currentIndex, array) => {
+    const sold = pool.tickets.reduce((prevValue, currentValue, currentIndex, array) => {
       return prevValue + parseInt(currentValue.count.toString())
     }, 0)
 
-    const locked = lottery.lockedTickets.reduce((prevValue, currentValue, currentIndex, array) => {
+    const locked = pool.lockedTickets.reduce((prevValue, currentValue, currentIndex, array) => {
       const expired = (new Date()).getTime() > parseInt((currentValue.expiredAt / BigInt(1000000)).toString());
       return !expired ? prevValue + parseInt(currentValue.ticket.count.toString()) : prevValue;
     }, 0)
 
-    const supply = parseInt(lottery.supply.toString());
-    const price = parseFloat(lottery.price.toString());
+    const supply = parseInt(pool.supply.toString());
+    const price = parseFloat(pool.price.toString());
 
     const now = new Date();
-    const activeUntil = new Date(parseInt((lottery.activeUntil / BigInt(1000000)).toString()))
+    const activeUntil = new Date(parseInt((pool.activeUntil / BigInt(1000000)).toString()))
     console.log('activeUntil', activeUntil)
 
     const isActive = new Date() < activeUntil;
 
-    // TODO winner or failed to collect
     let mode: string = 'Active'
-    console.log('aaaa', JSON.stringify(lottery.status))
-    if (JSON.stringify(lottery.status).indexOf('InsufficientParticipants') > -1) {
+    console.log('aaaa', JSON.stringify(pool.status))
+    if (JSON.stringify(pool.status).indexOf('InsufficientParticipants') > -1) {
       mode = 'InsufficientParticipants'
-    } else if (JSON.stringify(lottery.status).indexOf('Selected') > -1) {
-      mode = (lottery.status as any).Selected.winner.toString();
+    } else if (JSON.stringify(pool.status).indexOf('Selected') > -1) {
+      mode = (pool.status as any).Selected.winner.toString();
     }
 
     const soldOut = supply <= sold;
 
     let holdCount = 0;
 
-    let tickets = lottery.tickets.map(t => {
-      if (t.participant.toString() == principal && lottery) {
+    let tickets = pool.tickets.map(t => {
+      if (t.participant.toString() == principal && pool) {
         holdCount += parseInt(t.count.toString());
-        return <Ticket key={t.ticketId} ticket={t} lottery={lottery} mode={'purchased'} principal={principal} reload={() => {
+        return <Ticket key={t.ticketId} ticket={t} pool={pool} mode={'purchased'} principal={principal} reload={() => {
           fetch(id, true);
         }} />
       }
     }).filter(t => t != undefined).reverse();
 
-    let lockedTickets = lottery.lockedTickets.map(l => {
+    let lockedTickets = pool.lockedTickets.map(l => {
       const t = l.ticket;
       if (t.participant.toString() == principal) {
         const expired = now.getTime() > parseInt((l.expiredAt / BigInt(1000000)).toString());
-        return <Ticket key={t.ticketId} ticket={t} lottery={lottery} mode={expired ? 'expired' : 'unsettled'} principal={principal} reload={() => {
+        return <Ticket key={t.ticketId} ticket={t} pool={pool} mode={expired ? 'expired' : 'unsettled'} principal={principal} reload={() => {
           fetch(id, true);
         }} />
       }
@@ -177,15 +173,15 @@ const Page: NextPage = () => {
 
     dom = <div className={styles.top}>
 
-      <div className={styles.lotteryContainer}>
+      <div className={styles.poolContainer}>
 
-        <div className={styles.lotteryLeft}>
+        <div className={styles.poolLeft}>
 
           <h1>{`${nft.name} #${nft.index}`}</h1>
 
           <p>Provider
-            <a className={styles.owner} href={`https://dashboard.internetcomputer.org/account/${principalToAccountIdentifier(lottery.owner.toString(), null)}`} target="_blank" rel="noreferrer">
-              {`${principalToAccountIdentifier(lottery.owner.toString(), null).substring(0, 22)}...`}
+            <a className={styles.owner} href={`https://dashboard.internetcomputer.org/account/${principalToAccountIdentifier(pool.owner.toString(), null)}`} target="_blank" rel="noreferrer">
+              {`${principalToAccountIdentifier(pool.owner.toString(), null).substring(0, 22)}...`}
             </a>
           </p>
 
@@ -214,18 +210,27 @@ const Page: NextPage = () => {
               const rest = supply - (locked + sold);
               if (ticketNum > rest) {
                 alert(`You cannot purchase more than ${rest} tickets.`)
+                setTicketNum(rest);
                 return
               }
 
-              let unsettled = false;
+              let unsettled = 0;
+              let unsettledTicketId = null;
               const now = new Date();
-              lottery.lockedTickets.forEach(l => {
+              pool.lockedTickets.forEach(l => {
                 const expired = now.getTime() > parseInt((l.expiredAt / BigInt(1000000)).toString());
-                if (!expired) { unsettled = true; }
+                if (!expired) {
+                  unsettled = parseInt(l.ticket.count.toString());
+                  unsettledTicketId = l.ticket.ticketId;
+                }
               })
 
               if (unsettled) {
-                alert('You have an unsettled ticket. Do you want to purchase it again?')
+                const ok = confirm(`You have ${unsettled} unsettled ticket${unsettled > 1 ? 's' : ''}. Do you want to purchase ${unsettled > 1 ? 'them' : 'it'}?`);
+                if (ok) {
+                  setTicketNum(unsettled);
+                  setShowConfirmation(true)
+                }
                 return;
               }
 
@@ -260,7 +265,7 @@ const Page: NextPage = () => {
           }
 
           {mode == 'InsufficientParticipants' &&
-            <p>{'This lottery doesn\'t have enough partifipants.'}</p>
+            <p>{'This pool doesn\'t have enough participants.'}</p>
           }
 
           {mode != 'InsufficientParticipants' && mode != 'Active' &&
@@ -271,7 +276,7 @@ const Page: NextPage = () => {
 
         </div>
 
-        <div className={styles.lotteryRight}>
+        <div className={styles.poolRight}>
           <img src={nft.url} alt={nft.name} />
         </div>
       </div>
@@ -285,12 +290,12 @@ const Page: NextPage = () => {
       }
       {(tickets.length + lockedTickets.length) == 0 &&
         <div className={styles.ticketContainer}>
-          <p>You have purchased no ticket.</p>
+          <p>{'You own no ticket.'}</p>
         </div>
       }
 
       {showConfirmation && ticketNum && principal &&
-        <PurchaseConfirmation lottery={lottery} nft={nft} ticketNum={ticketNum} principal={principal}
+        <PurchaseConfirmation pool={pool} nft={nft} ticketNum={ticketNum} principal={principal}
           close={(reload) => {
 
             setShowConfirmation(false)

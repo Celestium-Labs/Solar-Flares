@@ -140,19 +140,19 @@
   row-gap: 20px;
 }
 
-.lotteryContainer {
+.poolContainer {
   display: flex;
 }
 
-.lotteryLeft {
+.poolLeft {
   width: 500px;
 }
 
-.lotteryRight {
+.poolRight {
   margin-left: auto;
 }
 
-.lotteryRight img {
+.poolRight img {
   min-width: 300px;
   min-height: 300px;
 }
