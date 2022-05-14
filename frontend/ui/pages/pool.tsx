@@ -314,7 +314,7 @@ const Page: NextPage = () => {
 
       <Head>
         <title>Drip - Swap your NFTs safely on IC</title>
-        <meta name="description" content="You can swap NFTs safely." />
+        <meta name="description" content="When the sun fills up with helium, a solar flare shoots in a random direction, at one contributor" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
