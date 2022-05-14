@@ -63,7 +63,8 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
     createdAt: Int;
   };
 
-  let ONE_MUNITE = 1000_000_000 * 60; // 1 sec * 60
+  let ONE_SEC = 1000_000_000; // 1 sec
+  let ONE_MUNITE = ONE_SEC * 60; // 1 sec * 60
   let ONE_HOUR = ONE_MUNITE * 60; // 1 min * 60
   let ONE_DAY = ONE_HOUR * 24; // 1 hour * 24
 
@@ -76,10 +77,11 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
   private stable var poolCount = 0;
 
   // how long a pool longs at least
-  private stable var minimalDuration = ONE_DAY;
+  private stable var minimalDuration = ONE_DAY * 3;
+  private stable var maximumDuration = ONE_DAY * 14;
 
   // a buffer duration until a settlement starts after a pool ends
-  private stable var settlementBuffer = ONE_HOUR;
+  private stable var settlementBuffer = ONE_MUNITE;
 
   // for upgrade
   private stable var poolEntries : [(Text, Pool)] = [];
@@ -156,8 +158,14 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
     } else if (price < ICP.TRANSFER_FEE * 100) {
       // must be equal or grather than 0.01 ICP
       return #err(#InvalidPrice);
+    } else if (price > 10) {
+      // must be equal or smaller than 10 ICP
+      return #err(#InvalidPrice);
     } else if (activeUntil - Time.now() < minimalDuration) {
       // The pool must long a certain duration at least
+      return #err(#InvalidActiveUntil);
+    } else if (activeUntil - Time.now() > maximumDuration) {
+      // The pool must long a certain duration at most
       return #err(#InvalidActiveUntil);
     };
 
@@ -490,12 +498,18 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
     ownerPrincipal := owner;
   };
 
-  // The following two functions are not necessary, but are kept for the sake of unit tests
   public shared({caller}) func setMinimalDuration(duration: Nat): async () {
     if (ownerPrincipal != caller) {
       throw Error.reject("This method can be called only by the owner.");
     };
     minimalDuration := duration;
+  };
+
+  public shared({caller}) func setMaximumDuration(duration: Nat): async () {
+    if (ownerPrincipal != caller) {
+      throw Error.reject("This method can be called only by the owner.");
+    };
+    maximumDuration := duration;
   };
 
   public shared({caller}) func setSettlementBuffer(buffer: Nat): async () {
