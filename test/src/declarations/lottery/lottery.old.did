@@ -65,9 +65,11 @@ type PrepareResult =
  };
 type PrepareError = 
  variant {
+   AlreadyExists;
    InvalidActiveUntil;
    InvalidPrice;
    InvalidSupply;
+   NotAllowed;
    NotOwned;
  };
 type Lottery__1 = 
@@ -128,7 +130,9 @@ service : {
   availableCycles: () -> (nat) query;
   cancelPreparation: () -> (bool);
   create: () -> (CreateResult);
+  getCreators: () -> (vec principal);
   getLotteries: (nat, nat) -> (vec Lottery__1);
+  getLottery: (text) -> (opt Lottery__1);
   getPreparation: () -> (opt Lottery__1);
   getTotalCount: () -> (nat);
   lock: (text, nat) -> (LockResult);
@@ -137,6 +141,5 @@ service : {
   setMinimalDuration: (nat) -> ();
   setOwner: (principal) -> ();
   setSettlementBuffer: (nat) -> ();
-  settle: (text) -> (opt LotteryStatus);
   unlock: (text, text) -> (UnLockResult);
 }

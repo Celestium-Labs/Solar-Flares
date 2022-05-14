@@ -220,7 +220,7 @@ export default function Component({ principal, created, close, resumeWithPrepare
               const index = parseInt(selectedNFT.index.toString());
 
               const canisterId = 'rkp4c-7iaaa-aaaaa-aaaca-cai' //selectedNFT.canister
-              const tokenIndex = 76 // 76~100 index
+              const tokenIndex = 79 // 76~100 index
               console.log('tokenIndex', tokenIndex)
 
               const lotteryActor = new LotteryActor();
@@ -231,8 +231,10 @@ export default function Component({ principal, created, close, resumeWithPrepare
 
               Loader.show('Preparing..');
 
+              const d = new Date().getTime()
+              const d2 = d + (1000 * 60 * 60); // 1hour later 
               const priceBigInt = Math.floor(price * 100000000);
-              const prepareResult = await lotteryActor.prepare(units, priceBigInt, activeUntil, canisterId, tokenIndex, 'EXT');
+              const prepareResult = await lotteryActor.prepare(units, priceBigInt, new Date(d2), canisterId, tokenIndex, 'EXT');
               console.log('prepareResult', prepareResult)
 
               if (prepareResult == null) {

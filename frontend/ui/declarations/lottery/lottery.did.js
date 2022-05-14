@@ -49,6 +49,7 @@ export const idlFactory = ({ IDL }) => {
   const PrepareSuccess = IDL.Text;
   const PrepareError = IDL.Variant({
     'InvalidActiveUntil' : IDL.Null,
+    'NotAllowed' : IDL.Null,
     'InvalidPrice' : IDL.Null,
     'AlreadyExists' : IDL.Null,
     'NotOwned' : IDL.Null,
@@ -103,9 +104,11 @@ export const idlFactory = ({ IDL }) => {
     'availableCycles' : IDL.Func([], [IDL.Nat], ['query']),
     'cancelPreparation' : IDL.Func([], [IDL.Bool], []),
     'create' : IDL.Func([], [CreateResult], []),
+    'getCreators' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
     'getLotteries' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Vec(Lottery__1)], []),
     'getLottery' : IDL.Func([IDL.Text], [IDL.Opt(Lottery__1)], []),
     'getPreparation' : IDL.Func([], [IDL.Opt(Lottery__1)], []),
+    'getTimestamp' : IDL.Func([], [IDL.Int], []),
     'getTotalCount' : IDL.Func([], [IDL.Nat], []),
     'lock' : IDL.Func([IDL.Text, IDL.Nat], [LockResult], []),
     'prepare' : IDL.Func(
@@ -117,7 +120,6 @@ export const idlFactory = ({ IDL }) => {
     'setMinimalDuration' : IDL.Func([IDL.Nat], [], []),
     'setOwner' : IDL.Func([IDL.Principal], [], []),
     'setSettlementBuffer' : IDL.Func([IDL.Nat], [], []),
-    'settle' : IDL.Func([IDL.Text], [IDL.Opt(LotteryStatus)], []),
     'unlock' : IDL.Func([IDL.Text, IDL.Text], [UnLockResult], []),
   });
   return Lottery;

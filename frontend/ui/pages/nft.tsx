@@ -19,6 +19,11 @@ import { principalToAccountIdentifier, fromHexString, principalToAccountIdentifi
 import Ticket from '../components/Ticket'
 import PurchaseConfirmation from '../components/PurchaseConfirmation';
 
+import differenceInMinutes from 'date-fns/differenceInMinutes'
+import differenceInSeconds from 'date-fns/differenceInSeconds'
+import differenceInHours from 'date-fns/differenceInHours'
+import differenceInDays from 'date-fns/differenceInDays'
+
 const Page: NextPage = () => {
 
   const router = useRouter()
@@ -33,14 +38,30 @@ const Page: NextPage = () => {
   const [ticketNum, setTicketNum] = useState<number | undefined>(1);
   const [showConfirmation, setShowConfirmation] = useState(false);
 
-  const fetch = useCallback(async (lotteryId: string | null) => {
+  const fetch = useCallback(async (lotteryId: string | null, shoLoader: boolean = false) => {
 
     if (lotteryId == null) { return }
+
+    if (shoLoader) {
+      Loader.show();
+    }
 
     console.log('fetch', lotteryId)
     const actor = new LotteryActor();
     await actor.createActor();
     console.log('createActor')
+
+    const time = await actor.getTimestamp();
+    if (time) {
+      const t = new Date(parseInt((time / BigInt(1000000)).toString()));
+      if (Math.abs(t.getTime() - new Date().getTime()) > 3 * 60 * 1000) {
+        // time check
+        Loader.dismiss()
+        alert('Your system clock is not correct.')
+        return
+      }
+    }
+
     const lotteries = await actor.getLottery(lotteryId);
     console.log('lotteries', lotteries);
     if (lotteries && lotteries.length > 0) {
@@ -51,6 +72,11 @@ const Page: NextPage = () => {
       setNft(nft);
     }
     setLoaded(true);
+
+    if (shoLoader) {
+      Loader.dismiss();
+    }
+
   }, [id]);
 
   useEffect(() => {
@@ -69,6 +95,32 @@ const Page: NextPage = () => {
 
   }, [loaded])
 
+
+
+  function createDiff(date: Date) {
+
+    const now = new Date();
+    
+    if (date < now) {
+      return null;
+    }
+
+    const daysDiff = differenceInDays(date, now)
+    if (daysDiff > 0) {
+      return `${daysDiff} day${daysDiff > 1 ? 's' : ''}`
+    }
+    const hoursDiff = differenceInHours(date, now)
+    if (hoursDiff > 0) {
+      return `${hoursDiff} hour${hoursDiff > 1 ? 's' : ''}`
+    }
+    const minutesDiff = differenceInMinutes(date, now)
+    if (minutesDiff > 0) {
+      return `${minutesDiff} minute${minutesDiff > 1 ? 's' : ''}`
+    }
+    const secondsDiff = differenceInSeconds(date, now)
+    return `${secondsDiff} second${secondsDiff > 1 ? 's' : ''}`
+  }
+
   let dom = <div></div>
 
   if (nft && lottery) {
@@ -78,7 +130,8 @@ const Page: NextPage = () => {
     }, 0)
 
     const locked = lottery.lockedTickets.reduce((prevValue, currentValue, currentIndex, array) => {
-      return prevValue + parseInt(currentValue.ticket.count.toString())
+      const expired = (new Date()).getTime() > parseInt((currentValue.expiredAt / BigInt(1000000)).toString());
+      return !expired ? prevValue + parseInt(currentValue.ticket.count.toString()) : prevValue;
     }, 0)
 
     const supply = parseInt(lottery.supply.toString());
@@ -90,6 +143,15 @@ const Page: NextPage = () => {
 
     const isActive = new Date() < activeUntil;
 
+    // TODO winner or failed to collect
+    let mode: string = 'Active'
+    console.log('aaaa', JSON.stringify(lottery.status))
+    if (JSON.stringify(lottery.status).indexOf('InsufficientParticipants') > -1) {
+      mode = 'InsufficientParticipants'
+    } else if (JSON.stringify(lottery.status).indexOf('Selected') > -1) {
+      mode = (lottery.status as any).Selected.winner.toString();
+    }
+
     const soldOut = supply <= sold;
 
     let holdCount = 0;
@@ -97,17 +159,21 @@ const Page: NextPage = () => {
     let tickets = lottery.tickets.map(t => {
       if (t.participant.toString() == principal && lottery) {
         holdCount += parseInt(t.count.toString());
-        return <Ticket ticket={t} lottery={lottery} mode={'purchased'} />
+        return <Ticket key={t.ticketId} ticket={t} lottery={lottery} mode={'purchased'} principal={principal} reload={() => {
+          fetch(id, true);
+        }} />
       }
-    }).filter(t => t != undefined);
+    }).filter(t => t != undefined).reverse();
 
     let lockedTickets = lottery.lockedTickets.map(l => {
       const t = l.ticket;
       if (t.participant.toString() == principal) {
         const expired = now.getTime() > parseInt((l.expiredAt / BigInt(1000000)).toString());
-        return <Ticket ticket={t} lottery={lottery} mode={expired ? 'expired' : 'unsettled'} />
+        return <Ticket key={t.ticketId} ticket={t} lottery={lottery} mode={expired ? 'expired' : 'unsettled'} principal={principal} reload={() => {
+          fetch(id, true);
+        }} />
       }
-    }).filter(t => t != undefined);
+    }).filter(t => t != undefined).reverse();
 
     dom = <div className={styles.top}>
 
@@ -117,13 +183,16 @@ const Page: NextPage = () => {
 
           <h1>{`${nft.name} #${nft.index}`}</h1>
 
-          <p>Owner</p>
-          <p>{lottery.owner.toString()}</p>
+          <p>Provider
+            <a className={styles.owner} href={`https://dashboard.internetcomputer.org/account/${principalToAccountIdentifier(lottery.owner.toString(), null)}`} target="_blank" rel="noreferrer">
+              {`${principalToAccountIdentifier(lottery.owner.toString(), null).substring(0, 22)}...`}
+            </a>
+          </p>
 
           <div className={styles.numbers}>
             <p>
-              <span className={styles.soldNumber}>{sold} / {supply} sold</span>
-              <span className={styles.lockedNumber}>{locked} locked</span>
+              <span className={styles.soldNumber}>{sold} / {supply}</span> <span className={styles.unitNumber}>sold</span>
+              <span className={styles.lockedNumber}>{locked} <span className={styles.unitNumber}>locked</span></span>
             </p>
             <div className={styles.gauge}>
               <div className={styles.soldGauge} style={{ width: Math.floor((sold / supply) * 100) + '%' }}></div>
@@ -132,7 +201,7 @@ const Page: NextPage = () => {
           </div>
 
           {holdCount > 0 &&
-            <p className={styles.chanceToWinContainer}>Odds of winning: <span className={styles.chanceToWin}>{(holdCount / supply * 100)}%</span></p>
+            <p className={styles.chanceToWinContainer}>Your odds of winning: <span className={styles.chanceToWin}>{(holdCount / supply * 100).toFixed(1)}%</span></p>
           }
 
           <div className={styles.applyContainer}>
@@ -146,6 +215,18 @@ const Page: NextPage = () => {
               if (ticketNum > rest) {
                 alert(`You cannot purchase more than ${rest} tickets.`)
                 return
+              }
+
+              let unsettled = false;
+              const now = new Date();
+              lottery.lockedTickets.forEach(l => {
+                const expired = now.getTime() > parseInt((l.expiredAt / BigInt(1000000)).toString());
+                if (!expired) { unsettled = true; }
+              })
+
+              if (unsettled) {
+                alert('You have an unsettled ticket. Do you want to purchase it again?')
+                return;
               }
 
               setShowConfirmation(true);
@@ -167,11 +248,27 @@ const Page: NextPage = () => {
 
               }
 
-            }} /> ticket{ticketNum ?? 0 > 1 ? 's' : ''} = {(price * (ticketNum ?? 0) / 100000000).toFixed(2)} ICP
+            }} /> ticket{(ticketNum ?? 0) > 1 ? 's' : ''} = {(price * (ticketNum ?? 0) / 100000000).toFixed(2)} ICP
 
           </div>
 
-          <p>A winner will be selected randomly among the participants after {activeUntil.toLocaleString()}.</p>
+          {mode == 'Active' &&
+            <div>
+              <p>A winner will be randomly selected from the participants.</p>
+              <p>{'Ends in ' + createDiff(activeUntil) ?? ''}.</p>
+            </div>
+          }
+
+          {mode == 'InsufficientParticipants' &&
+            <p>{'This lottery doesn\'t have enough partifipants.'}</p>
+          }
+
+          {mode != 'InsufficientParticipants' && mode != 'Active' &&
+            <p>Congratulations 🎉 <br />
+              The winner is
+              {' ' + mode}!</p>
+          }
+
         </div>
 
         <div className={styles.lotteryRight}>
@@ -198,7 +295,7 @@ const Page: NextPage = () => {
 
             setShowConfirmation(false)
 
-            if (reload) { fetch(id) }
+            if (reload) { fetch(id, true) }
           }} />
       }
 
@@ -211,7 +308,7 @@ const Page: NextPage = () => {
     <Layout>
 
       <Head>
-        <title>SWAPP - Swap your NFTs safely on IC</title>
+        <title>Drip - Swap your NFTs safely on IC</title>
         <meta name="description" content="You can swap NFTs safely." />
         <link rel="icon" href="/favicon.ico" />
       </Head>

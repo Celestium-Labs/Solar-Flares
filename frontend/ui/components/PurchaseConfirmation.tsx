@@ -27,17 +27,15 @@ export default function Component({ lottery, nft, ticketNum, principal, close }:
 
       <p className={styles.title}>Confirm to participate</p>
 
-      <p className={styles.description}>You will participate the lottery.
-        If all tickets are not purchased within the time frame, you can claim to get refunded on the lottery page.
+      <p className={styles.description}>You will participate in the drip for {nft.name} #{nft.index.toString()}.
       </p>
 
-      <p>
-        <ul>
-          <li>{icp} ICP</li>
-          <li>Tickets: {ticketNum}</li>
-          <li>Chance to win: {(ticketNum / parseFloat(lottery.supply.toString()) * 100).toFixed(1)} %</li>
-        </ul>
-      </p>
+      <ul>
+        <li>PRICE: {icp} ICP</li>
+        <li>Chance to win: {(ticketNum / parseFloat(lottery.supply.toString()) * 100).toFixed(1)} %</li>
+      </ul>
+
+      <p className={styles.caution}>If all tickets are not purchased within the time frame, you can claim to get refunded on the lottery page.</p>
 
       <div className={styles.buttons}>
         <p className={styles.selectButton} onClick={async () => {
@@ -53,7 +51,7 @@ export default function Component({ lottery, nft, ticketNum, principal, close }:
 
           console.log('createActor')
 
-          Loader.show('Fetching your balance.')
+          Loader.show('')
           const accountIdentifier = principalToAccountIdentifier(principal, null);
           console.log('accountIdentifier', accountIdentifier, fromHexString(accountIdentifier))
           const balance = await ledgerActor.account_balance(fromHexString(accountIdentifier))
@@ -61,11 +59,11 @@ export default function Component({ lottery, nft, ticketNum, principal, close }:
 
           if (!balance || balance.e8s < totalICP + TRANSFER_FEE) {
             Loader.dismiss()
-            alert('You don`t have enough fund in your wallet.')
+            alert('You don\'t have enough fund in your wallet.')
             return;
           }
 
-          Loader.show('Securing ticket(s).')
+          Loader.show(`Securing ${ticketNum > 1 ? '' : 'a'} ticket${ticketNum > 1 ? 's' : ''}.`)
 
           const lockResult = await lotteryActor.lock(id ?? '', ticketNum)
           console.log('lockResult', lockResult)
@@ -77,14 +75,14 @@ export default function Component({ lottery, nft, ticketNum, principal, close }:
 
             switch (JSON.stringify(lockError)) {
               case (JSON.stringify({ 'LotteryNotFound': null })):
-                alert('Unknown error occurs. Try again later.')
+                alert('Unknown error has occurred. Try again later.')
                 close(true);
                 break;
               case (JSON.stringify({ 'CalledByOwner': null })):
-                alert('You can`t purchase a ticket because you are a host of this lottery.')
+                alert('You can\'t purchase a ticket because you are the host of this lottery.')
                 break;
               case (JSON.stringify({ 'Full': null })):
-                alert('This is sold out now.')
+                alert('This drip has been sold out now.')
                 close(true);
                 break;
               case (JSON.stringify({ 'Ended': null })):

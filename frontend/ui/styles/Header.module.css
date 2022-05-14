@@ -26,9 +26,9 @@
 }
 
 .connectButton {
-  background: #FF0079;
-  box-shadow: 0 3px 0 0 #8E0F4C;
-  border-radius: 5px;
+  background: #090909;
+  color: #fcfcfc;
+  border-radius: 2px;
   text-align: center;
   width: 120px;
   height: 40px;
@@ -42,8 +42,8 @@
 }
 
 .connectButton:hover {
-  transform: translate3d(0, 2px, 0);
-  background: #CC0061;
+  transform: translate3d(0, 1px, 0);
+  background: #333;
   box-shadow: none;
 }
 

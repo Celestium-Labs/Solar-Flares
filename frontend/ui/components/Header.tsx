@@ -9,9 +9,8 @@ import LoginMenu from './LoginMenu';
 
 export default function Component() {
 
-  const { accountIdentifier, login, logout } = useContext(Context);
+  const { accountIdentifier, login, logout, showLoginMenu, setShowLoginMenu } = useContext(Context);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const [showLoginMenu, setShowLoginMenu] = useState(false);
 
   return <header className={styles.container}>
     <h1>
@@ -21,16 +20,21 @@ export default function Component() {
     </h1>
 
     <ul>
-      <li>
+      {/* <li>
         <Link href="/#howitworks">
           <a>how it works</a>
         </Link>
-      </li>
+      </li> */}
       <li>
-        <Link href="/#team">
-          <a>team</a>
+        <Link href="/">
+          <a>Explore</a>
         </Link>
       </li>
+      {/* <li>
+        <Link href="/#team">
+          <a>Team</a>
+        </Link>
+      </li> */}
     </ul>
 
     <p className={styles.connectButton} onClick={async () => {

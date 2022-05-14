@@ -66,14 +66,17 @@ export default function Component({ lottery }: IProps) {
   const diff = createDiff();
 
   return <div className={styles.container}>
-    <Link href={`/lottery/?id=${lottery.id}`}>
+    <Link href={`/nft/?id=${lottery.id}`}>
       <a>
         <img src={nft.url} alt={name} />
 
         <div className={styles.textContainer}>
           <p className={styles.name}>{name}</p>
           <p className={`${styles.status} ${status == 'Active' ? styles.active : ''}`}>{status}</p>
-          <p className={styles.status}>{diff ? ('Ends in ' + diff) : ('Ended at ' + activeUntil.toLocaleDateString() )}</p>
+          <div className={styles.priceContainer}>
+            <p className={styles.price}>{(parseFloat(lottery.price.toString()) / 100000000).toFixed(2)} ICP</p>
+            <p className={styles.date}>{diff ? ('Ends in ' + diff) : 'Ended'}</p>
+          </div>
         </div>
 
       </a>

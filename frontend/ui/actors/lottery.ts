@@ -80,5 +80,15 @@ export default class LotteryActor {
     if (!this.actor) { return null }
     return await this.actor.getPreparation();
   }
+
+  async getCreators() {
+    if (!this.anonymous) { return null }
+    return await this.anonymous.getCreators();
+  }
+
+  async getTimestamp() {
+    if (!this.anonymous) { return null }
+    return await this.anonymous.getTimestamp();
+  }
 }
 

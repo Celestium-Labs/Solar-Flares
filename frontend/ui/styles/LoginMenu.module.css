@@ -12,10 +12,10 @@
 .container {
   width: 240px;
   margin: 0 auto;
-  padding: 15px 30px;
-  background: #171717;
-  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.50);
-  border-radius: 9px;
+  padding: 15px 15px;
+  background: #fcfcfc;
+  box-shadow: 0 2px 12px 0 rgba(192,192,192,0.50);
+  border-radius: 3px;
   position: absolute;
   top: 90px;
   right: 30px;
@@ -35,9 +35,8 @@
   display: flex;
   align-items: center;
   margin-top: 10px;
-  color: #FF0079;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   transition: all 0.2s ease-in;
 }
 
@@ -66,5 +65,5 @@
 }
 
 .container .wallet:hover {
-  color: #a50150;
+  background: #eee;
 }

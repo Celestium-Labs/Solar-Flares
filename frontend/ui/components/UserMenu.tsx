@@ -16,11 +16,17 @@ export default function Component({ close }: IProps) {
   }}>
 
     <div className={styles.container}>
-      <p className={styles.principal}>{ principal }</p>
+      <p className={styles.principal}>{principal}</p>
 
-      <p className={styles.rooms}>
-        <Link href="/rooms">
-          <a>your rooms</a>
+      <p className={styles.hosted}>
+        <Link href="/provided">
+          <a>NFTs you provided</a>
+        </Link>
+      </p>
+
+      <p className={styles.participated}>
+        <Link href="/participated">
+          <a>NFTs you participated</a>
         </Link>
       </p>
 

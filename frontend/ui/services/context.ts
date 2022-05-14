@@ -6,6 +6,8 @@ type IContext = {
   login: (wallet: 'plug' | 'stoic') => Promise<boolean>,
   anonymousLogin: () => void,
   logout: () => void,
+  showLoginMenu: boolean,
+  setShowLoginMenu: (showLoginMenu: boolean) => void,
 }
 
 export const Context = createContext<IContext>({
@@ -16,4 +18,6 @@ export const Context = createContext<IContext>({
   })},
   anonymousLogin: () => {},
   logout: () => {},
+  showLoginMenu: false,
+  setShowLoginMenu: (showLoginMenu: boolean) => {},
 });

@@ -18,9 +18,11 @@ export interface Lottery {
   'availableCycles' : () => Promise<bigint>,
   'cancelPreparation' : () => Promise<boolean>,
   'create' : () => Promise<CreateResult>,
+  'getCreators' : () => Promise<Array<Principal>>,
   'getLotteries' : (arg_0: bigint, arg_1: bigint) => Promise<Array<Lottery__1>>,
   'getLottery' : (arg_0: string) => Promise<[] | [Lottery__1]>,
   'getPreparation' : () => Promise<[] | [Lottery__1]>,
+  'getTimestamp' : () => Promise<bigint>,
   'getTotalCount' : () => Promise<bigint>,
   'lock' : (arg_0: string, arg_1: bigint) => Promise<LockResult>,
   'prepare' : (
@@ -37,7 +39,6 @@ export interface Lottery {
   'setMinimalDuration' : (arg_0: bigint) => Promise<undefined>,
   'setOwner' : (arg_0: Principal) => Promise<undefined>,
   'setSettlementBuffer' : (arg_0: bigint) => Promise<undefined>,
-  'settle' : (arg_0: string) => Promise<[] | [LotteryStatus]>,
   'unlock' : (arg_0: string, arg_1: string) => Promise<UnLockResult>,
 }
 export type LotteryStatus = { 'InsufficientParticipants' : null } |
@@ -56,6 +57,7 @@ export interface Lottery__1 {
   'price' : bigint,
 }
 export type PrepareError = { 'InvalidActiveUntil' : null } |
+  { 'NotAllowed' : null } |
   { 'InvalidPrice' : null } |
   { 'AlreadyExists' : null } |
   { 'NotOwned' : null } |

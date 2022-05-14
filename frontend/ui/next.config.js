@@ -17,7 +17,7 @@ module.exports = {
         // Important: return the modified config
         return config
     },
-    reactStrictMode: true,
+    // reactStrictMode: true,
     trailingSlash: true,
     exportPathMap: async function (
         defaultPathMap,
@@ -25,8 +25,9 @@ module.exports = {
       ) {
         return {
           '/': { page: '/' },
-          '/room': { page: '/room' },
-          '/rooms': { page: '/rooms' },
+          '/nft': { page: '/nft' },
+          '/participated': { page: '/nfts' },
+          '/provided': { page: '/nfts' },
         }
       },
 }

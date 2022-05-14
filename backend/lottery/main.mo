@@ -87,6 +87,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   private stable var nftsEntries: [(Text, Text)] = [];
   private stable var lotteryIdsEntries : [(Int, Text)] = [];
   private stable var preparationsEntries : [(Principal, Lottery)] = [];
+  private stable var creators : [Principal] = [];
 
   // to store all lotteries
   private let lotteries : HashMap.HashMap<Text, Lottery> = HashMap.fromIter<Text, Lottery>(lotteryEntries.vals(), 0, Text.equal, Text.hash);
@@ -109,9 +110,20 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     #InvalidActiveUntil;
     #NotOwned;
     #AlreadyExists;
+    #NotAllowed;
   };
   type PrepareResult = Result.Result<PrepareSuccess, PrepareError>;
   public shared({caller}) func prepare(supply: Nat, price: Nat, activeUntil: Nat, canisterId: Text, tokenIndex: Nat, standard: Text): async PrepareResult {
+
+    // see if the caller can prepare a lottery
+    var allowed = creators.size() == 0;
+    for (principal in creators.vals()) {
+      if (principal == caller) { allowed := true; };
+    };
+
+    if (allowed == false) {
+      return #err(#NotAllowed);
+    };
 
     // see if there is a prepared lottery
     switch (preparations.get(caller)) {
@@ -412,11 +424,9 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   // 
   // settle a lottery
   //
-  public shared({caller}) func settle(lotteryId: Text): async ?LotteryStatus {
+  private func settle(lotteryId: Text): async ?LotteryStatus {
 
-    if (ownerPrincipal != caller) {
-      throw Error.reject("This method can be called only by the owner.");
-    };
+    Debug.print("settle " # lotteryId);
 
     switch (lotteries.get(lotteryId)) {
       case null { 
@@ -431,6 +441,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
           if (lottery.status != #Active) {
 
             // Already finished
+            Debug.print("Already finished");
             return ?lottery.status;
 
           } else if (getTicketCount(lottery, false) < lottery.supply) {
@@ -453,6 +464,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
               status = #InsufficientParticipants;
               createdAt = lottery.createdAt;
             });
+            Debug.print("Insufficient Participants");
 
             return ?#InsufficientParticipants;
 
@@ -511,7 +523,7 @@ shared({caller = actorOwner}) actor class Lottery() = this {
                   status = #Selected({winner});
                   createdAt = lottery.createdAt;
                 });
-
+                Debug.print("Selected");
                 return ?#Selected({winner});
               };
             }
@@ -535,20 +547,21 @@ shared({caller = actorOwner}) actor class Lottery() = this {
       };
       case (?lottery) {
 
-        // Only lotteries with #InsufficientParticipants allow to refund
-        if (lottery.status != #InsufficientParticipants) {
-          return null;
-        };
-
         Debug.print("IN");
 
-        // make an array with locked and unlocked tickets
         var allTickets : Buffer.Buffer<Ticket> = Buffer.Buffer(0);
-        for (ticket in lottery.tickets.vals()) {
-          allTickets.add(ticket);
+        // purchased tickets can be refuneded only when the lottery has not been sold out
+        if (lottery.status == #InsufficientParticipants) {
+          for (ticket in lottery.tickets.vals()) {
+            allTickets.add(ticket);
+          };
         };
-        for (ticket in lottery.lockedTickets.vals()) {
-          allTickets.add(ticket.ticket);
+
+        // locked tickets can be refuneded after the lottery has ended
+        if (lottery.status != #Active) {
+          for (ticket in lottery.lockedTickets.vals()) {
+            allTickets.add(ticket.ticket);
+          };
         };
 
         for (ticket in allTickets.vals()) {
@@ -621,9 +634,20 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   // get lottery
   public shared({caller}) func getLottery(id: Text): async ?Lottery {
 
-    // TODO: delete expired tickets?
+    switch (lotteries.get(id)) {
+      case null { return null; };
+      case (?lottery) {
 
-    return lotteries.get(id);
+        if (lottery.activeUntil < Time.now() and lottery.status == #Active) {
+          // settle
+          ignore await settle(lottery.id);
+          return lotteries.get(id);
+        } else {
+          // active or ended
+          return ?lottery;
+        }
+      };
+    };
   };
 
   // get lotteries
@@ -631,8 +655,8 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
     if (to <= since) {
       throw Error.reject("`to` must be grather than `since`.");
-    } else if (Nat.sub(to, since) > 50) {
-      throw Error.reject("You can't fetch more than 50 items at once.");
+    } else if (Nat.sub(to, since) > 100) {
+      throw Error.reject("You can't fetch more than 100 items at once.");
     };
     
     let arr : Buffer.Buffer<Lottery> = Buffer.Buffer(0);
@@ -676,6 +700,14 @@ shared({caller = actorOwner}) actor class Lottery() = this {
 
       };
     };
+  };
+
+  public func getCreators(): async [Principal] {
+    return creators;
+  };
+
+  public func getTimestamp(): async Int {
+    return Time.now();
   };
 
   private func getTicketCount(lottery: Lottery, includeLockedTickets: Bool): Nat {

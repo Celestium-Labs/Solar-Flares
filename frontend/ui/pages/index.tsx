@@ -15,14 +15,16 @@ import Loader from '../components/Loader';
 import LotteryActor, { Lottery } from '../actors/lottery';
 import LotteryCreationDialog from '../components/LotteryCreationDialog';
 import LotteryComponent from '../components/Lottery';
+import { Principal } from '@dfinity/principal';
 
 const Home: NextPage = () => {
 
-  const { login, accountIdentifier, principal } = useContext(Context);
+  const { login, accountIdentifier, principal, showLoginMenu, setShowLoginMenu } = useContext(Context);
   const [initialized, setInitialized] = useState(false);
 
   const [showLotteryDialog, setShowLotteryDialog] = useState(false);
   const [lotteries, setLotteries] = useState<Lottery[]>([]);
+  const [creators, setCreators] = useState<Principal[]>([]);
 
   const router = useRouter()
 
@@ -32,53 +34,64 @@ const Home: NextPage = () => {
     const actor = new LotteryActor();
     await actor.createActor();
 
+
     if (to && to > 0) {
       const newLotteries = await actor.getLotteries(Math.max(0, to - 12), to);
       if (newLotteries) {
-        setLotteries(arr => [...arr, ...newLotteries])
+        setLotteries(arr => [...newLotteries.reverse(), ...arr])
       }
-
     } else {
       const countBigInt = await actor.getTotalCount() ?? BigInt(0);
       const count = parseInt(countBigInt.toString());
       const newLotteries = await actor.getLotteries(Math.max(0, count - 12), count);
       console.log('newLotteries', newLotteries)
       if (newLotteries) {
-        setLotteries(arr => [...arr, ...newLotteries])
+        setLotteries(arr => [...newLotteries.reverse(), ...arr])
       }
     }
+
     Loader.dismiss();
+  }
+
+  async function getCreators() {
+
+    const actor = new LotteryActor();
+    await actor.createActor();
+    const creators = await actor.getCreators();
+    if (creators != null) {
+      setCreators(creators);
+    }
   }
 
   useEffect(() => {
 
     if (initialized) { return }
-
     setInitialized(true);
     fetch(null);
+    getCreators();
 
-  }, [initialized]);
+  }, []);
 
-  const createRoom = useCallback(async () => {
+  const startDrip = useCallback(async () => {
     if (accountIdentifier == null) {
-      alert('You need to connect your wallet first.')
+      setShowLoginMenu(true)
       return
     }
 
     const actor = new LotteryActor();
     await actor.createActor()
 
-    Loader.show('Fetching data.');
+    Loader.show();
 
     const preparation = await actor.getPreparation()
     console.log('preparation', preparation)
     Loader.dismiss();
 
     if (preparation && preparation.length > 0) {
-      
+
       // prepare
       console.log(preparation)
-    
+
 
     } else {
       // create
@@ -87,6 +100,13 @@ const Home: NextPage = () => {
 
 
   }, [accountIdentifier]);
+
+  let isCreator = false;
+  creators.forEach(c => {
+    if (c.toString() == principal) {
+      isCreator = true;
+    }
+  })
 
   return (
     <Layout>
@@ -115,18 +135,24 @@ const Home: NextPage = () => {
       <main className={styles.container}>
 
         <div className={styles.main}>
-          <h2>Swap your NFTs safely on IC</h2>
+          {/* <h2>solar flares</h2> */}
+          <h3>When the sun fills up with helium <br /> a solar flare shoots in a random direction, at one contributor</h3>
           <Dfinity />
-          <p onClick={() => {
-            createRoom();
-          }} className={styles.createButton}>Create a lottery</p>
+          {isCreator &&
+            <p onClick={() => {
+              startDrip();
+            }} className={styles.createButton}>Host a drip!</p>
+          }
         </div>
 
-        <div className={styles.lotteriesContainer}>
-          {lotteries.map(lottery => {
-            return <LotteryComponent key={lottery.id} lottery={lottery} />
-          })}
-        </div>
+        <section className={styles.section} id="drips">
+
+          <div className={styles.lotteriesContainer}>
+            {lotteries.map(lottery => {
+              return <LotteryComponent key={lottery.id} lottery={lottery} />
+            })}
+          </div>
+        </section>
 
         <section className={styles.section} id="team">
           <h3>Team</h3>
@@ -179,7 +205,10 @@ const Home: NextPage = () => {
         <LotteryCreationDialog principal={principal} close={() => {
           setShowLotteryDialog(false)
         }} created={(lotteryId) => {
-          
+          setShowLotteryDialog(false)
+
+          router.push(`/drip/?id=${lotteryId}`);
+
         }} resumeWithPreparedLottery={() => {
 
         }} />

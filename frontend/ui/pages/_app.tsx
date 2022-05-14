@@ -22,6 +22,7 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   const [accountIdentifier, setAccountIdentifier] = useState<string | null>(null);
   const [principal, setPrincipal] = useState<string | null>(null);
+  const [showLoginMenu, setShowLoginMenu] = useState(false);
 
   useEffect(() => {
     if (initialized) { return }
@@ -90,7 +91,7 @@ export default function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   const getLayout = Component.getLayout ?? ((page) => page)
   return getLayout(
-    <Context.Provider value={{ accountIdentifier, principal, login: _login, anonymousLogin, logout: _logout }}>
+    <Context.Provider value={{ accountIdentifier, principal, login: _login, anonymousLogin, logout: _logout, showLoginMenu, setShowLoginMenu }}>
       <Component {...pageProps} />
     </Context.Provider>
   );

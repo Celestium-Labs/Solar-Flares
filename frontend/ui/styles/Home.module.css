@@ -14,14 +14,20 @@
   font-size: 20px;
 }
 
+.main h3 {
+  font-weight: 100;
+  font-size: 20px;
+}
+
+
 .main svg {
   margin: 50px 0;
 }
 
 .createButton {
-  background: #FF0079;
-  box-shadow: 0 3px 0 0 #8E0F4C;
-  border-radius: 5px;
+  background: #161616;
+  color: #fcfcfc;
+  border-radius: 3px;
   text-align: center;
   width: 180px;
   height: 48px;
@@ -37,7 +43,7 @@
 
 .createButton:hover {
   transform: translate3d(0, 2px, 0);
-  background: #CC0061;
+  background: #333;
   box-shadow: none;
 }
 
@@ -48,17 +54,18 @@
 
 
 .section h3 {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 36px;
+  font-weight: 700;
+  margin-top: 30px;
 }
 
 .section h3::after {
   display: block;
   content: '';
-  height: 4px;
-  background: #FF0079;
+  height: 6px;
+  background: #161616;
   width: 80px;
-  margin: 30px 0;
+  margin: 40px 0 50px;
 }
 
 .sectionItem {
@@ -116,8 +123,9 @@
 .lotteriesContainer {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  column-gap: 20px;
-  row-gap: 20px;
+  column-gap: 30px;
+  row-gap: 30px;
+  padding-bottom: 40px;
 }
 
 @media screen and (max-width: 900px) {

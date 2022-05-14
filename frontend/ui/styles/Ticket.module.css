@@ -1,6 +1,6 @@
 
 .ticket {
-  border: 1px solid #fff;
+  border: 1px solid #161616;
   border-radius: 1px;
   padding: 15px;
   display: flex;
@@ -9,9 +9,9 @@
 } 
 
 .ticket:hover {
-  border: 1px solid #aaa;
-  color: #ddd;
-  background: rgba(0,0,0, 0.2);
+  border: 1px solid #888;
+  color: #333;
+  background: rgba(240,240,240, 0.4);
 }
 
 .ticket p {
@@ -26,6 +26,10 @@
   color: #FF3900;
 }
 
+.ticketRefundable {
+  color: #04BB1E;
+}
+
 .ticketExpired {
-  color: #aaa;
+  color: #888;
 }

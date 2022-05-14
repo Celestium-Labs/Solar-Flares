@@ -1,6 +1,14 @@
 .container {
-  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.50);
+  background: #fcfcfc;
+  box-shadow: 0 2px 12px 0 rgba(192,192,192,0.50);
+  transition: all 0.2s ease-in;
 }
+
+.container:hover {
+  color: #aaa;
+  background: rgba(50,50,50, 0.15);
+}
+
 
 .textContainer {
   padding: 20px;
@@ -13,4 +21,17 @@
 
 .active {
   color: #FF0079;
+}
+
+.priceContainer {
+  display: flex;
+  padding-top: 5px;
+}
+
+.price {
+  font-weight: 700;
+}
+
+.date {
+  margin-left: auto;
 }
