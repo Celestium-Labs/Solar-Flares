@@ -221,7 +221,7 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
         pools.put(pool.id, pool);
         preparations.delete(caller);
 
-        // Check if the pool creator owns existing rooms. If they do, append the pool ID to the existing array of pools. If not, create
+        // Check if the pool creator owns existing pools. If they do, append the pool ID to the existing array of pools. If not, create
         // an array of owned pools for the pool creator.
         switch (poolIdsByOwner.get(caller)) {
           case (?poolIds) {
@@ -431,8 +431,6 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
       };
       case (?pool) {
 
-        Debug.print("IN");
-
         var allTickets : Buffer.Buffer<Ticket> = Buffer.Buffer(0);
         // purchased tickets can be refuneded only when the pool has not been sold out
         if (pool.status == #InsufficientParticipants) {
@@ -449,10 +447,8 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
         };
 
         for (ticket in allTickets.vals()) {
-          Debug.print("ticket");
   
           if (ticket.participant == caller and ticket.ticketId == ticketId) {
-            Debug.print("found");
 
             let canisterAccount = Principal.fromActor(this);
 
@@ -463,7 +459,6 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
                 return null;
               };
               case (#ok balance) {
-                Debug.print(Nat.toText(balance.balance));
 
                 let amount = balance.balance;
 
@@ -628,8 +623,6 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
   //
   private func settle(poolId: Text): async ?PoolStatus {
 
-    Debug.print("settle " # poolId);
-
     switch (pools.get(poolId)) {
       case null { 
         return null;
@@ -643,7 +636,6 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
           if (pool.status != #Active) {
 
             // Already finished
-            Debug.print("Already finished");
             return ?pool.status;
 
           } else if (getTicketCount(pool, false) < pool.supply) {
@@ -666,7 +658,6 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
               status = #InsufficientParticipants;
               createdAt = pool.createdAt;
             });
-            Debug.print("Insufficient Participants");
 
             return ?#InsufficientParticipants;
 
@@ -688,7 +679,7 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
             let hashSum = hash.sum();
             let entropy = Blob.fromArray(hashSum);
 
-            let sourceNumber = Random.Finite(entropy).range(Nat8.fromNat(candidates.size()));
+            let sourceNumber = Random.Finite(entropy).range(Nat8.fromNat(32));
 
             switch (sourceNumber) {
               case null {
@@ -697,14 +688,6 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
               case (?sourceNumber) {
 
                 let index = sourceNumber % candidates.size();
-
-                // TODO: remove these
-                Debug.print("candidate length");
-                Debug.print(Nat.toText(candidates.size()));
-                Debug.print("sourceNumber");
-                Debug.print(Nat.toText(sourceNumber));
-                Debug.print("index");
-                Debug.print(Nat.toText(index));
                 
                 let winner = candidates[index];
                 // Transfer the nft to a winner;
@@ -725,7 +708,6 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
                   status = #Selected({winner});
                   createdAt = pool.createdAt;
                 });
-                Debug.print("Selected");
                 return ?#Selected({winner});
               };
             }
