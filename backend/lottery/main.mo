@@ -422,122 +422,6 @@ shared({caller = actorOwner}) actor class Lottery() = this {
   };
 
   // 
-  // settle a lottery
-  //
-  private func settle(lotteryId: Text): async ?LotteryStatus {
-
-    Debug.print("settle " # lotteryId);
-
-    switch (lotteries.get(lotteryId)) {
-      case null { 
-        return null;
-      };
-      case (?lottery) {
-
-        let now = Time.now();
-
-        if (lottery.activeUntil + settlementBuffer < now) {
-
-          if (lottery.status != #Active) {
-
-            // Already finished
-            Debug.print("Already finished");
-            return ?lottery.status;
-
-          } else if (getTicketCount(lottery, false) < lottery.supply) {
-
-            // Transfer back the nft to the owner;
-            ignore await EXT.transfer(lottery.token.canisterId, Principal.fromActor(this), lottery.owner, lottery.token.index);
-            // Remove from the token list
-            let tokenId = lottery.token.canisterId # "-" # Nat.toText(lottery.token.index);
-            nfts.delete(tokenId);
-
-            lotteries.put(lotteryId, {
-              id = lottery.id;
-              supply = lottery.supply;
-              price = lottery.price;
-              activeUntil = lottery.activeUntil;
-              owner = lottery.owner;
-              token = lottery.token;
-              tickets = lottery.tickets;
-              lockedTickets = lottery.lockedTickets;
-              status = #InsufficientParticipants;
-              createdAt = lottery.createdAt;
-            });
-            Debug.print("Insufficient Participants");
-
-            return ?#InsufficientParticipants;
-
-          } else {
-
-            // Select winner;
-            var participants : Buffer.Buffer<Principal> = Buffer.Buffer(0);
-            for (ticket in lottery.tickets.vals()) {
-              for (i in Iter.range(0, ticket.count)) {
-                participants.add(ticket.participant);
-              }
-            };
-            let candidates = participants.toArray();
-
-            // create an entropy for random value generation
-            let hash = SHA224.Digest();
-            hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(Time.now()))));
-            hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(candidates.size()))));
-            let hashSum = hash.sum();
-            let entropy = Blob.fromArray(hashSum);
-
-            let sourceNumber = Random.Finite(entropy).range(Nat8.fromNat(candidates.size()));
-
-            switch (sourceNumber) {
-              case null {
-                throw Error.reject("Failed to select a winner.");
-              };
-              case (?sourceNumber) {
-
-                let index = sourceNumber % candidates.size();
-
-                // TODO: remove these
-                Debug.print("candidate length");
-                Debug.print(Nat.toText(candidates.size()));
-                Debug.print("sourceNumber");
-                Debug.print(Nat.toText(sourceNumber));
-                Debug.print("index");
-                Debug.print(Nat.toText(index));
-                
-                let winner = candidates[index];
-                // Transfer the nft to a winner;
-                ignore await EXT.transfer(lottery.token.canisterId, Principal.fromActor(this), winner, lottery.token.index);
-                // Remove from the token list
-                let tokenId = lottery.token.canisterId # "-" # Nat.toText(lottery.token.index);
-                nfts.delete(tokenId);
-
-                lotteries.put(lotteryId, {
-                  id = lottery.id;
-                  supply = lottery.supply;
-                  price = lottery.price;
-                  activeUntil = lottery.activeUntil;
-                  owner = lottery.owner;
-                  token = lottery.token;
-                  tickets = lottery.tickets;
-                  lockedTickets = lottery.lockedTickets;
-                  status = #Selected({winner});
-                  createdAt = lottery.createdAt;
-                });
-                Debug.print("Selected");
-                return ?#Selected({winner});
-              };
-            }
-          }
-
-        } else {
-          return ?lottery.status;
-        }
-
-      };
-    };
-  };
-
-  // 
   // refund ICP
   //
   public shared({caller}) func refundICP(lotteryId: Text, ticketId: Text): async ?ICP.TransferResult {
@@ -731,9 +615,122 @@ shared({caller = actorOwner}) actor class Lottery() = this {
     return count;
   };
 
-  // public func test(): async Principal {
-  //   return Principal.fromActor(this);
-  // };
+
+  // 
+  // settle a lottery
+  //
+  private func settle(lotteryId: Text): async ?LotteryStatus {
+
+    Debug.print("settle " # lotteryId);
+
+    switch (lotteries.get(lotteryId)) {
+      case null { 
+        return null;
+      };
+      case (?lottery) {
+
+        let now = Time.now();
+
+        if (lottery.activeUntil + settlementBuffer < now) {
+
+          if (lottery.status != #Active) {
+
+            // Already finished
+            Debug.print("Already finished");
+            return ?lottery.status;
+
+          } else if (getTicketCount(lottery, false) < lottery.supply) {
+
+            // Transfer back the nft to the owner;
+            ignore await EXT.transfer(lottery.token.canisterId, Principal.fromActor(this), lottery.owner, lottery.token.index);
+            // Remove from the token list
+            let tokenId = lottery.token.canisterId # "-" # Nat.toText(lottery.token.index);
+            nfts.delete(tokenId);
+
+            lotteries.put(lotteryId, {
+              id = lottery.id;
+              supply = lottery.supply;
+              price = lottery.price;
+              activeUntil = lottery.activeUntil;
+              owner = lottery.owner;
+              token = lottery.token;
+              tickets = lottery.tickets;
+              lockedTickets = lottery.lockedTickets;
+              status = #InsufficientParticipants;
+              createdAt = lottery.createdAt;
+            });
+            Debug.print("Insufficient Participants");
+
+            return ?#InsufficientParticipants;
+
+          } else {
+
+            // Select winner;
+            var participants : Buffer.Buffer<Principal> = Buffer.Buffer(0);
+            for (ticket in lottery.tickets.vals()) {
+              for (i in Iter.range(0, ticket.count)) {
+                participants.add(ticket.participant);
+              }
+            };
+            let candidates = participants.toArray();
+
+            // create an entropy for random value generation
+            let hash = SHA224.Digest();
+            hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(Time.now()))));
+            hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(candidates.size()))));
+            let hashSum = hash.sum();
+            let entropy = Blob.fromArray(hashSum);
+
+            let sourceNumber = Random.Finite(entropy).range(Nat8.fromNat(candidates.size()));
+
+            switch (sourceNumber) {
+              case null {
+                throw Error.reject("Failed to select a winner.");
+              };
+              case (?sourceNumber) {
+
+                let index = sourceNumber % candidates.size();
+
+                // TODO: remove these
+                Debug.print("candidate length");
+                Debug.print(Nat.toText(candidates.size()));
+                Debug.print("sourceNumber");
+                Debug.print(Nat.toText(sourceNumber));
+                Debug.print("index");
+                Debug.print(Nat.toText(index));
+                
+                let winner = candidates[index];
+                // Transfer the nft to a winner;
+                ignore await EXT.transfer(lottery.token.canisterId, Principal.fromActor(this), winner, lottery.token.index);
+                // Remove from the token list
+                let tokenId = lottery.token.canisterId # "-" # Nat.toText(lottery.token.index);
+                nfts.delete(tokenId);
+
+                lotteries.put(lotteryId, {
+                  id = lottery.id;
+                  supply = lottery.supply;
+                  price = lottery.price;
+                  activeUntil = lottery.activeUntil;
+                  owner = lottery.owner;
+                  token = lottery.token;
+                  tickets = lottery.tickets;
+                  lockedTickets = lottery.lockedTickets;
+                  status = #Selected({winner});
+                  createdAt = lottery.createdAt;
+                });
+                Debug.print("Selected");
+                return ?#Selected({winner});
+              };
+            }
+          }
+
+        } else {
+          return ?lottery.status;
+        }
+
+      };
+    };
+  };
 
   // Internal cycle management - good general case
   public func acceptCycles() : async () {

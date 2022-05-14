@@ -10,7 +10,7 @@ let E8S = 100000000n
 let SWAP_FEE = 2000000n;
 let TRANSFER_FEE = 10000n;
 
-describe("Room Tests", () => {
+xdescribe("Room Tests", () => {
 
   beforeAll(async () => {
   });
