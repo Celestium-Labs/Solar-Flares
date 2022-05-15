@@ -5,6 +5,7 @@ import styles from '../styles/Room.module.css'
 import { Layout } from '../components/Layout'
 import { useRouter } from 'next/router'
 import PoolActor from '../actors/solarFlares';
+import { getDomain } from '../actors/icns';
 
 import { Pool } from '../declarations/SolarFlares/SolarFlares.did'
 import Loader from '../components/Loader';
@@ -34,6 +35,7 @@ const Page: NextPage = () => {
   const [loaded, setLoaded] = useState(false);
   const [ticketNum, setTicketNum] = useState<number | undefined>(1);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [domain, setDomain] = useState<string | null>(null);
 
   const fetch = useCallback(async (poolId: string | null, shoLoader: boolean = false) => {
 
@@ -67,6 +69,11 @@ const Page: NextPage = () => {
 
       const nft = await getNFTDetail(pool.token.canisterId, 'EXT', parseInt(pool.token.index.toString()));
       setNft(nft);
+
+      const domain = await getDomain(pool.owner);
+      if (domain) {
+        setDomain(domain);
+      }
     }
     setLoaded(true);
 
@@ -91,7 +98,6 @@ const Page: NextPage = () => {
     }
 
   }, [loaded])
-
 
 
   function createDiff(date: Date) {
@@ -181,7 +187,7 @@ const Page: NextPage = () => {
 
           <p>Provider
             <a className={styles.owner} href={`https://dashboard.internetcomputer.org/account/${principalToAccountIdentifier(pool.owner.toString(), null)}`} target="_blank" rel="noreferrer">
-              {`${principalToAccountIdentifier(pool.owner.toString(), null).substring(0, 22)}...`}
+              {domain ? domain : `${principalToAccountIdentifier(pool.owner.toString(), null).substring(0, 22)}...`}
             </a>
           </p>
 
