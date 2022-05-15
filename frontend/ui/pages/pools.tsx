@@ -85,7 +85,7 @@ const Home: NextPage = () => {
   }, [accountIdentifier, principal]);
 
   const doms = pools.map(pool => {
-    return <PoolComponent pool={pool} />
+    return <PoolComponent key={pool.id} pool={pool} />
   })
 
   return (
