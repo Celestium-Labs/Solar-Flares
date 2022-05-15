@@ -153,8 +153,10 @@
 }
 
 .poolRight img {
-  min-width: 300px;
-  min-height: 300px;
+  display: block;
+  padding-top: 20px;
+  min-width: 350px;
+  min-height: 350px;
 }
 
 @media screen and (max-width: 1000px) {

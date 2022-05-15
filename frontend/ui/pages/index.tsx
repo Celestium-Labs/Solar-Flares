@@ -30,7 +30,6 @@ const Home: NextPage = () => {
     const actor = new PoolActor();
     await actor.createActor();
 
-
     if (to && to > 0) {
       const newPools = await actor.getPools(Math.max(0, to - 12), to);
       if (newPools) {
@@ -39,7 +38,7 @@ const Home: NextPage = () => {
     } else {
       const countBigInt = await actor.getTotalCount() ?? BigInt(0);
       const count = parseInt(countBigInt.toString());
-      const newPools = await actor.getPools(Math.max(0, count - 12), count);
+      const newPools = await actor.getPools(Math.max(0, count - 12), Math.max(count, 1));
       console.log('newPools', newPools)
       if (newPools) {
         setPools(arr => [...newPools.reverse(), ...arr])

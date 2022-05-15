@@ -71,7 +71,7 @@ module {
   public type TransferFeeArg = {};
   public type TransferResult = { #Ok : BlockIndex; #Err : TransferError };
 
-  public let Ledger = actor "rno2w-sqaaa-aaaaa-aaacq-cai" : actor { 
+  public let Ledger = actor "ryjl3-tyaaa-aaaaa-aaaba-cai" : actor { 
     account_balance : shared query AccountBalanceArgs -> async Tokens;
     archives : shared query () -> async Archives;
     decimals : shared query () -> async { decimals : Nat32 };

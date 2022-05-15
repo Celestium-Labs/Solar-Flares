@@ -9,6 +9,11 @@
   background: rgba(50,50,50, 0.15);
 }
 
+.container img {
+  display: block;
+  width: 100%;
+}
+
 
 .textContainer {
   padding: 20px;

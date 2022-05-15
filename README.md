@@ -84,3 +84,6 @@ dfx deploy erc721 --argument="(principal \"sajsc-opcbj-2kasj-vyxv5-j5adf-6h3j4-z
 
 dfx deploy SolarFlares
 dfx canister call SolarFlares setOwner "(principal \"sajsc-opcbj-2kasj-vyxv5-j5adf-6h3j4-zr6st-jjdxk-u6xw2-qzl2k-iqe\")"
+
+
+<!-- dfx canister --network ic call SolarFlares setOwner "(principal \"sajsc-opcbj-2kasj-vyxv5-j5adf-6h3j4-zr6st-jjdxk-u6xw2-qzl2k-iqe\")" -->
