@@ -26,7 +26,7 @@ const Page: NextPage = () => {
   const router = useRouter()
   const { id } = router.query as { id: string | null };
 
-  const { accountIdentifier, principal } = useContext(Context);
+  const { accountIdentifier, principal, setShowLoginMenu } = useContext(Context);
 
   const [pool, setPool] = useState<Pool | null>(null);
   const [nft, setNft] = useState<NFTDetails | null>(null);
@@ -206,6 +206,11 @@ const Page: NextPage = () => {
               if (activeUntil < new Date() || soldOut) { return }
 
               if (!ticketNum || !principal) { return }
+
+              if (!principal) {
+                setShowLoginMenu(true);
+                return
+              }
 
               const rest = supply - (locked + sold);
               if (ticketNum > rest) {
