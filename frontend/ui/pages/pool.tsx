@@ -21,6 +21,26 @@ import differenceInMinutes from 'date-fns/differenceInMinutes'
 import differenceInSeconds from 'date-fns/differenceInSeconds'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
+import { Principal } from '@dfinity/principal'
+
+const Name = (props: {principalText: string}) => {
+
+  const [name, setName] = useState(props.principalText);
+
+  useEffect(() => {
+
+    getDomain(Principal.fromText(props.principalText)).then(domain => {
+      console.log('doman', domain);
+      if (domain) {
+        setName(domain);
+      }
+    })
+
+  }, [props.principalText]);
+
+  return <span>{name}</span>
+
+}
 
 const Page: NextPage = () => {
 
@@ -282,7 +302,7 @@ const Page: NextPage = () => {
           {mode != 'InsufficientParticipants' && mode != 'Active' &&
             <p>Congratulations 🎉 <br />
               The winner is
-              {' ' + mode}!</p>
+              {' '}<Name principalText={mode} />!</p>
           }
 
         </div>
