@@ -19,7 +19,7 @@ type IProps = {
 }
 
 const today = new Date()
-let t = Math.floor(today.getTime() / (1000 * 60 * 30)) * (1000 * 60 * 30);
+let t = Math.ceil(today.getTime() / (1000 * 60 * 30)) * (1000 * 60 * 30);
 const minDate = new Date(t + 1000 * 60 * 60 * 24 * 3) //  3days
 const maxDate = new Date(t + 1000 * 60 * 60 * 24 * 14) // 14 days
 
@@ -159,7 +159,7 @@ export default function Component({ principal, created, close, resumeWithPrepare
             <p className={styles.step2ItemTitle}>After when will a winner be selected?</p>
 
             <div className={styles.datepickerContainer}>
-              <DatePicker className={styles.datepicker} showTimeSelect={true} dateFormat="Pp" minDate={minDate} maxDate={maxDate} selected={activeUntil} onChange={(date) => {
+              <DatePicker className={styles.datepicker} onFocus={e => e.target.blur()} showTimeSelect={true} dateFormat="Pp" minDate={minDate} maxDate={maxDate} selected={activeUntil} onChange={(date) => {
 
                 if (date) {
                   setActiveUntil(date)
