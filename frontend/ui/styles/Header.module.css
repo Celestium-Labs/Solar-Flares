@@ -59,4 +59,14 @@
     display: none;
   }
 
+  .container svg {
+    width: 150px;
+  }
+
+  .connectButton {
+    width: 100px;
+    height: 36px;
+    line-height: 36px;
+  }
+
 }

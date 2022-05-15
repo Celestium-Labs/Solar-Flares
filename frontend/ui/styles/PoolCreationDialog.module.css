@@ -255,3 +255,40 @@
 .bold {
   font-weight: 700;
 }
+
+@media screen and (max-width: 750px) {
+
+  .container {
+    max-width: 90%;
+    min-width: 90%;
+    max-height: 90%;
+  }
+
+  .header {
+    flex-direction: column;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 25px;
+  }
+
+  .nft {
+    flex-direction: column;
+  }
+
+  .nft img {
+    display: block;
+    margin: 0 auto 20px;
+  }
+
+  .nftButtonContainer {
+    margin: 20px auto 10px;
+  }
+
+  .nftTitle {
+    font-size: 18px;
+  }
+  
+}
+

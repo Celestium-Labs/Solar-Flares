@@ -218,5 +218,7 @@
   .poolRight img {
     display: block;
     width: 100%;
+    min-width: auto;
+    min-height: auto;
   }
 }

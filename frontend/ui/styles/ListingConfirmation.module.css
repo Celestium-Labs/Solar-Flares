@@ -106,3 +106,15 @@
 .cancelButton:hover {
   background-color: #eee;
 }
+
+
+@media screen and (max-width: 550px) {
+
+  .container {
+    max-width: 90%;
+    min-width: 90%;
+    max-height: 90%;
+  }
+  
+}
+

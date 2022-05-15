@@ -241,7 +241,7 @@ const Page: NextPage = () => {
 
               setShowConfirmation(true);
 
-            }}>{soldOut ? 'Sold out!' : isActive ? 'Participate' : 'Ended'}</p>
+            }}>{isActive && tickets.length == 0 ? 'Participate' : isActive ? 'Purchase more!' : 'Ended'}</p>
 
             <input type="number" disabled={!isActive} value={ticketNum} min={1} max={supply - locked - sold} onChange={e => {
 
