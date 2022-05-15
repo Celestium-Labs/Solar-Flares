@@ -97,7 +97,7 @@ const Page: NextPage = () => {
   function createDiff(date: Date) {
 
     const now = new Date();
-    
+
     if (date < now) {
       return null;
     }
@@ -318,7 +318,10 @@ const Page: NextPage = () => {
     <Layout>
 
       <Head>
-      <meta property="og:title" content={"Solar Flares - Get an NFT on IC"} />
+        <title>Solar Flares - Get an NFT on IC</title>
+        <meta name="description" content="When the sun fills up with helium, a solar flare shoots in a random direction, at one contributor" />
+        <link rel="icon" href="/favicon.ico" />
+        <meta property="og:title" content={"Solar Flares - Get an NFT on IC"} />
         <meta property="og:type" content="website" />
         <meta property="og:description" content={'When the sun fills up with helium, a solar flare shoots in a random direction, at one contributor'} />
         <meta property="og:url" content="https://jdq7a-qiaaa-aaaad-qcbia-cai.ic.fleek.co/ogp.jpg" />
