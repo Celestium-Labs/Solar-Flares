@@ -1,4 +1,22 @@
 export const idlFactory = ({ IDL }) => {
+  const TransferSuccess = IDL.Record({ 'blockHeight' : IDL.Nat64 });
+  const Tokens = IDL.Record({ 'e8s' : IDL.Nat64 });
+  const BlockIndex = IDL.Nat64;
+  const TransferError__1 = IDL.Variant({
+    'TxTooOld' : IDL.Record({ 'allowed_window_nanos' : IDL.Nat64 }),
+    'BadFee' : IDL.Record({ 'expected_fee' : Tokens }),
+    'TxDuplicate' : IDL.Record({ 'duplicate_of' : BlockIndex }),
+    'TxCreatedInFuture' : IDL.Null,
+    'InsufficientFunds' : IDL.Record({ 'balance' : Tokens }),
+  });
+  const TransferError = IDL.Record({
+    'kind' : TransferError__1,
+    'message' : IDL.Opt(IDL.Text),
+  });
+  const TransferResult = IDL.Variant({
+    'ok' : TransferSuccess,
+    'err' : TransferError,
+  });
   const CreateSuccess = IDL.Text;
   const CreateError = IDL.Variant({
     'NotTransferred' : IDL.Null,
@@ -59,24 +77,6 @@ export const idlFactory = ({ IDL }) => {
     'ok' : PrepareSuccess,
     'err' : PrepareError,
   });
-  const TransferSuccess = IDL.Record({ 'blockHeight' : IDL.Nat64 });
-  const Tokens = IDL.Record({ 'e8s' : IDL.Nat64 });
-  const BlockIndex = IDL.Nat64;
-  const TransferError__1 = IDL.Variant({
-    'TxTooOld' : IDL.Record({ 'allowed_window_nanos' : IDL.Nat64 }),
-    'BadFee' : IDL.Record({ 'expected_fee' : Tokens }),
-    'TxDuplicate' : IDL.Record({ 'duplicate_of' : BlockIndex }),
-    'TxCreatedInFuture' : IDL.Null,
-    'InsufficientFunds' : IDL.Record({ 'balance' : Tokens }),
-  });
-  const TransferError = IDL.Record({
-    'kind' : TransferError__1,
-    'message' : IDL.Opt(IDL.Text),
-  });
-  const TransferResult = IDL.Variant({
-    'ok' : TransferSuccess,
-    'err' : TransferError,
-  });
   const UnLockSuccess = IDL.Record({
     'id' : IDL.Text,
     'activeUntil' : IDL.Int,
@@ -103,6 +103,11 @@ export const idlFactory = ({ IDL }) => {
     'acceptCycles' : IDL.Func([], [], []),
     'availableCycles' : IDL.Func([], [IDL.Nat], ['query']),
     'cancelPreparation' : IDL.Func([], [IDL.Bool], []),
+    'collectICP' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Vec(TransferResult)],
+        [],
+      ),
     'create' : IDL.Func([], [CreateResult], []),
     'getCreators' : IDL.Func([], [IDL.Vec(IDL.Principal)], []),
     'getPool' : IDL.Func([IDL.Text], [IDL.Opt(Pool)], []),
@@ -117,6 +122,8 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'refundICP' : IDL.Func([IDL.Text, IDL.Text], [IDL.Opt(TransferResult)], []),
+    'setCreators' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
+    'setMaximumDuration' : IDL.Func([IDL.Nat], [], []),
     'setMinimalDuration' : IDL.Func([IDL.Nat], [], []),
     'setOwner' : IDL.Func([IDL.Principal], [], []),
     'setSettlementBuffer' : IDL.Func([IDL.Nat], [], []),

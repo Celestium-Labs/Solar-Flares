@@ -129,6 +129,7 @@ service : {
   acceptCycles: () -> ();
   availableCycles: () -> (nat) query;
   cancelPreparation: () -> (bool);
+  collectICP: (text, text) -> (vec TransferResult);
   create: () -> (CreateResult);
   getCreators: () -> (vec principal);
   getPool: (text) -> (opt Pool);
@@ -139,6 +140,8 @@ service : {
   lock: (text, nat) -> (LockResult);
   prepare: (nat, nat, nat, text, nat, text) -> (PrepareResult);
   refundICP: (text, text) -> (opt TransferResult);
+  setCreators: (vec principal) -> ();
+  setMaximumDuration: (nat) -> ();
   setMinimalDuration: (nat) -> ();
   setOwner: (principal) -> ();
   setSettlementBuffer: (nat) -> ();

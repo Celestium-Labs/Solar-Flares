@@ -73,9 +73,11 @@ type SolarFlares =
    prepare: (nat, nat, nat, text, nat, text) -> (PrepareResult);
    refundICP: (text, text) -> (opt TransferResult);
    setCreators: (vec principal) -> ();
+   setMaximumDuration: (nat) -> ();
    setMinimalDuration: (nat) -> ();
    setOwner: (principal) -> ();
    setSettlementBuffer: (nat) -> ();
+   transferICP: (text, text) -> (vec TransferResult);
    unlock: (text, text) -> (UnLockResult);
  };
 type PrepareSuccess = text;

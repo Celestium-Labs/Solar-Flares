@@ -118,9 +118,15 @@ export const idlFactory = ({ IDL }) => {
       ),
     'refundICP' : IDL.Func([IDL.Text, IDL.Text], [IDL.Opt(TransferResult)], []),
     'setCreators' : IDL.Func([IDL.Vec(IDL.Principal)], [], []),
+    'setMaximumDuration' : IDL.Func([IDL.Nat], [], []),
     'setMinimalDuration' : IDL.Func([IDL.Nat], [], []),
     'setOwner' : IDL.Func([IDL.Principal], [], []),
     'setSettlementBuffer' : IDL.Func([IDL.Nat], [], []),
+    'transferICP' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Vec(TransferResult)],
+        [],
+      ),
     'unlock' : IDL.Func([IDL.Text, IDL.Text], [UnLockResult], []),
   });
   return SolarFlares;

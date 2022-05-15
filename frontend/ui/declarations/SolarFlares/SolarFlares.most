@@ -26,6 +26,7 @@ type Ticket =
 type Token = {canisterId : Text; index : Nat; standard : Text};
 actor {
   stable var creators : [Principal];
+  stable var maximumDuration : Nat;
   stable var minimalDuration : Nat;
   stable var nftsEntries : [(Text, Text)];
   stable var ownerPrincipal : Principal;

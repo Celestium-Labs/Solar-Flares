@@ -19,12 +19,16 @@ let TRANSFER_FEE = 10000n;
 
 const solarFlaresCanisterPrincipal = Principal.fromText(solarFlaresCanisterId);
 
-xdescribe("Lottery Tests", () => {
+describe("Lottery Tests", () => {
 
   beforeAll(async () => {
     console.log('aaa', new Date().getTime())
     await identities.swapp.solarFlaresActor.setMinimalDuration(1);
     await identities.swapp.solarFlaresActor.setSettlementBuffer(1);
+    await identities.swapp.solarFlaresActor.setCreators([
+      identities.user1.identity.getPrincipal(),
+      Principal.fromText('pblec-idudb-zapy3-hr4c5-jc7uf-egrmy-y7bra-nma6q-cviq3-46zpu-sqe'),
+    ])
   });
 
   afterEach(async () => {
@@ -221,9 +225,50 @@ xdescribe("Lottery Tests", () => {
       expect(lottery.owner).toEqual(identities.user1.identity.getPrincipal());
     }
 
+    // collect ICP
+    const developer = principalToAccountIdentifier(identities.swapp.identity.getPrincipal().toString(), null);
+    let developerBalance = await identities.swapp.ledgerActor.account_balance({account: developer});
+    console.log('developerBalance', developerBalance)
+
+    const provider = principalToAccountIdentifier(lottery.owner.toString(), null);
+    let providerBalance = await identities.swapp.ledgerActor.account_balance({account: provider});
+    console.log('providerBalance', providerBalance)
+
+    // transfer ICP
+    {
+      const lottery = lotteryResult[0];
+      for (let i = 0; i < lottery.tickets.length; i++) {
+        const ticket = lottery.tickets[i]
+        const result = await identities.swapp.solarFlaresActor.transferICP(lotteryId, ticket.ticketId);
+
+        const developerBalance1 = await identities.swapp.ledgerActor.account_balance({account: developer});
+        
+        const developerExpected = (0.02 * parseInt(ticket.count.toString()) * 0.1 - 0.0001) * 100000000
+        const providerExpected = (0.02 * parseInt(ticket.count.toString()) * 0.9 - 0.0001) * 100000000
+
+        const providerBalance1 = await identities.swapp.ledgerActor.account_balance({account: provider});
+
+        expect((developerBalance1.e8s - developerBalance.e8s).toString()).toEqual(Math.floor(developerExpected) + '');
+        expect((providerBalance1.e8s - providerBalance.e8s).toString()).toEqual(Math.floor(providerExpected) + '');
+
+        developerBalance = developerBalance1;
+        providerBalance = providerBalance1;
+      }
+    }
+
+    // again
+    {
+      const lottery = lotteryResult[0];
+      for (let i = 0; i < lottery.tickets.length; i++) {
+        const ticket = lottery.tickets[i]
+        const result = await identities.swapp.solarFlaresActor.transferICP(lotteryId, ticket.ticketId);
+        expect(result.length).toEqual(0);
+      }
+    }
+
   });
 
-  it("Failed to execute lottery because of insufficient participants", async () => {
+  xit("Failed to execute lottery because of insufficient participants", async () => {
 
     const tokenIndex1 = await identities.swapp.erc721Actor.mintNFT({
       'to': { 'principal': identities.user1.identity.getPrincipal() },
@@ -688,22 +733,23 @@ xdescribe("refund ICP", () => {
 });
 
 
-// xdescribe("function test", () => {
+xdescribe("function test", () => {
 
-//   beforeAll(async () => {
-//   });
+  beforeAll(async () => {
+  });
 
-//   afterEach(async () => {
-//   });
+  afterEach(async () => {
+  });
 
-//   afterAll(async () => {
-//   });
+  afterAll(async () => {
+  });
 
-//   it("getPools", async () => {
-//     await expect(identities.user1.solarFlaresActor.getPools(0, 51)).rejects.toThrow();
-//     await expect(identities.user1.solarFlaresActor.getPools(10, 2)).rejects.toThrow();
-//     const lotteries = await identities.user1.solarFlaresActor.getPools(0, 2)
-//     expect(lotteries).toEqual(expect.anything());
-//   });
+  it("getPools", async () => {
+    await expect(identities.user1.solarFlaresActor.getPools(0, 51)).rejects.toThrow();
+    await expect(identities.user1.solarFlaresActor.getPools(10, 2)).rejects.toThrow();
+    const lotteries = await identities.user1.solarFlaresActor.getPools(0, 2)
+    expect(lotteries).toEqual(expect.anything());
+  });
 
-// });
+
+});

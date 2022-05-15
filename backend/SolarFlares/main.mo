@@ -158,7 +158,7 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
     } else if (price < ICP.TRANSFER_FEE * 100) {
       // must be equal or grather than 0.01 ICP
       return #err(#InvalidPrice);
-    } else if (price > 10) {
+    } else if (price > ICP.E8S * 10) {
       // must be equal or smaller than 10 ICP
       return #err(#InvalidPrice);
     } else if (activeUntil - Time.now() < minimalDuration) {
@@ -308,19 +308,25 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
           };
           
           case null {
-            let ticketId = poolId # "-" # Principal.toText(caller) # Int.toText(Time.now());
+            let hash = SHA224.Digest();
+            hash.write(Blob.toArray(Text.encodeUtf8(poolId)));
+            hash.write(Blob.toArray(Text.encodeUtf8("-")));
+            hash.write(Blob.toArray(Text.encodeUtf8(Int.toText(Time.now()))));
+            hash.write(Blob.toArray(Text.encodeUtf8("-")));
+            hash.write(Blob.toArray(Principal.toBlob(caller)));
+            let ticketId = Hex.encode(hash.sum());
 
             let lockedTicket = {
               ticket = {
-                ticketId = ticketId;
+                ticketId;
                 participant = caller;
                 payeeSubAccount = ICP.createSubaccount(ticketId);
-                count = count;
+                count;
               };
               expiredAt = Time.now() + ONE_MUNITE * 3; // A participant must execute payment in 3 mins otherwise it will get expired
             };
 
-            let appendedLockedTickets : Buffer.Buffer<LockedTicket> = Buffer.Buffer(0);
+            let appendedLockedTickets : Buffer.Buffer<LockedTicket> = Buffer.Buffer(pool.lockedTickets.size() + 1);
             for (ticket in pool.lockedTickets.vals()) {
               appendedLockedTickets.add(ticket);
             };
@@ -390,7 +396,7 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
 
           };
           if (found == false and Time.now() < locketTicket.expiredAt) {
-            // if the ticket is not unlocked and it's not expired yet, keep it locked
+            // if the ticket is not unlocked and is not expired, keep it locked
             lockedTickets.add(locketTicket);
           }
         };
@@ -401,7 +407,7 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
           };
           case (?ticket) {
 
-            let appendedTickets : Buffer.Buffer<Ticket> = Buffer.Buffer(0);
+            let appendedTickets : Buffer.Buffer<Ticket> = Buffer.Buffer(pool.tickets.size() + 1);
             for (ticket in pool.tickets.vals()) {
               appendedTickets.add(ticket);
             };
@@ -490,35 +496,6 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
     };
   };
 
-  // set an owner of this canister
-  public shared({caller}) func setOwner(owner: Principal): async () {
-    if (ownerPrincipal != caller) {
-      throw Error.reject("This method can be called only by the owner.");
-    };
-    ownerPrincipal := owner;
-  };
-
-  public shared({caller}) func setMinimalDuration(duration: Nat): async () {
-    if (ownerPrincipal != caller) {
-      throw Error.reject("This method can be called only by the owner.");
-    };
-    minimalDuration := duration;
-  };
-
-  public shared({caller}) func setMaximumDuration(duration: Nat): async () {
-    if (ownerPrincipal != caller) {
-      throw Error.reject("This method can be called only by the owner.");
-    };
-    maximumDuration := duration;
-  };
-
-  public shared({caller}) func setSettlementBuffer(buffer: Nat): async () {
-    if (ownerPrincipal != caller) {
-      throw Error.reject("This method can be called only by the owner.");
-    };
-    settlementBuffer := buffer;
-  };
-
   // get a pool count
   public func getTotalCount(): async Nat {
     return poolCount;
@@ -595,6 +572,14 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
     };
   };
 
+  public func getTimestamp(): async Int {
+    return Time.now();
+  };
+
+  public func getCreators(): async [Principal] {
+    return creators;
+  };
+
   public shared({caller}) func setCreators(_creators: [Principal]): async () {
     if (ownerPrincipal != caller) {
       throw Error.reject("This method can be called only by the owner.");
@@ -602,12 +587,63 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
     creators := _creators;
   };
 
-  public func getCreators(): async [Principal] {
-    return creators;
+  // 
+  // transfer ICP
+  //
+  public shared({caller}) func transferICP(poolId: Text, ticketId: Text): async [ICP.TransferResult] {
+
+    if (ownerPrincipal != caller) {
+      throw Error.reject("This method can be called only by the owner.");
+    };
+
+    switch (pools.get(poolId)) {
+      case null { 
+        return [];
+      };
+      case (?pool) {
+
+        if (pool.status == #Active or pool.status == #InsufficientParticipants) {
+          return [];
+        } else {
+          for (ticket in pool.tickets.vals()) {
+            if (ticket.ticketId == ticketId) {
+              let canisterAccount = Principal.fromActor(this);
+              return await ICP.distributeICP(ticketId, pool.owner, ownerPrincipal, canisterAccount);
+            }
+          };
+          return [];
+        };
+      };
+    };
   };
 
-  public func getTimestamp(): async Int {
-    return Time.now();
+  // set an owner of this canister
+  public shared({caller}) func setOwner(owner: Principal): async () {
+    if (ownerPrincipal != caller) {
+      throw Error.reject("This method can be called only by the owner.");
+    };
+    ownerPrincipal := owner;
+  };
+
+  public shared({caller}) func setMinimalDuration(duration: Nat): async () {
+    if (ownerPrincipal != caller) {
+      throw Error.reject("This method can be called only by the owner.");
+    };
+    minimalDuration := duration;
+  };
+
+  public shared({caller}) func setMaximumDuration(duration: Nat): async () {
+    if (ownerPrincipal != caller) {
+      throw Error.reject("This method can be called only by the owner.");
+    };
+    maximumDuration := duration;
+  };
+
+  public shared({caller}) func setSettlementBuffer(buffer: Nat): async () {
+    if (ownerPrincipal != caller) {
+      throw Error.reject("This method can be called only by the owner.");
+    };
+    settlementBuffer := buffer;
   };
 
   private func getTicketCount(pool: Pool, includeLockedTickets: Bool): Nat {
@@ -678,7 +714,7 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
           } else {
 
             // Select winner;
-            var participants : Buffer.Buffer<Principal> = Buffer.Buffer(0);
+            var participants : Buffer.Buffer<Principal> = Buffer.Buffer(pool.tickets.size());
             for (ticket in pool.tickets.vals()) {
               for (i in Iter.range(0, ticket.count)) {
                 participants.add(ticket.participant);

@@ -61,9 +61,13 @@ export interface SolarFlares {
       [] | [TransferResult]
     >,
   'setCreators' : (arg_0: Array<Principal>) => Promise<undefined>,
+  'setMaximumDuration' : (arg_0: bigint) => Promise<undefined>,
   'setMinimalDuration' : (arg_0: bigint) => Promise<undefined>,
   'setOwner' : (arg_0: Principal) => Promise<undefined>,
   'setSettlementBuffer' : (arg_0: bigint) => Promise<undefined>,
+  'transferICP' : (arg_0: string, arg_1: string) => Promise<
+      Array<TransferResult>
+    >,
   'unlock' : (arg_0: string, arg_1: string) => Promise<UnLockResult>,
 }
 export type SubAccount = Array<number>;

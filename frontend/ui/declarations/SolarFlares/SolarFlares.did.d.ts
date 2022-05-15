@@ -41,6 +41,9 @@ export interface SolarFlares {
   'acceptCycles' : () => Promise<undefined>,
   'availableCycles' : () => Promise<bigint>,
   'cancelPreparation' : () => Promise<boolean>,
+  'collectICP' : (arg_0: string, arg_1: string) => Promise<
+      Array<TransferResult>
+    >,
   'create' : () => Promise<CreateResult>,
   'getCreators' : () => Promise<Array<Principal>>,
   'getPool' : (arg_0: string) => Promise<[] | [Pool]>,
@@ -60,6 +63,8 @@ export interface SolarFlares {
   'refundICP' : (arg_0: string, arg_1: string) => Promise<
       [] | [TransferResult]
     >,
+  'setCreators' : (arg_0: Array<Principal>) => Promise<undefined>,
+  'setMaximumDuration' : (arg_0: bigint) => Promise<undefined>,
   'setMinimalDuration' : (arg_0: bigint) => Promise<undefined>,
   'setOwner' : (arg_0: Principal) => Promise<undefined>,
   'setSettlementBuffer' : (arg_0: bigint) => Promise<undefined>,

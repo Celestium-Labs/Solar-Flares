@@ -20,6 +20,7 @@ import Int        "mo:base/Int";
 module {
 
   public let TRANSFER_FEE =   10000;
+  public let E8S =   100000000;
 
   let Ledger = L.Ledger;
 
@@ -162,31 +163,32 @@ module {
     }
   };
 
-
-  public func collectTransactionFee(ticketId: Text, collector: Principal, canisterAccount: Principal): async ?Nat {
+  public func distributeICP(ticketId: Text, provider: Principal, developer: Principal, canisterAccount: Principal): async [TransferResult] {
     
-    let fromSubaccount = createSubaccount(ticketId);
-    let collectorAccount = accountIdentifier(collector, defaultSubaccount());
+    let fromSubaccount   = createSubaccount(ticketId);
+    let providerAccount  = accountIdentifier(provider, defaultSubaccount());
+    let developerAccount = accountIdentifier(developer, defaultSubaccount());
 
     switch(await balance({
       account = canisterAccount;
       subaccount = fromSubaccount;
     })) {
       case (#ok balance) {
-        if (balance.balance > TRANSFER_FEE) {
-          let amount = balance.balance - TRANSFER_FEE;
-          let res = await transfer(?fromSubaccount, collectorAccount, amount);
-          switch (res) {
-            case (#ok block) {
-              return ?(amount);
-            };
-            case (#err error) {};
-          };
+        let availableICP = balance.balance;
+        if (availableICP > TRANSFER_FEE * 2) {
+          let amountToProvider = balance.balance * 9 / 10;
+          let resultToProvider = await transfer(?fromSubaccount, providerAccount, amountToProvider - TRANSFER_FEE);
+
+          let amountToDeveloper = availableICP - amountToProvider;
+          let resultToDeveloper  = await transfer(?fromSubaccount, developerAccount, amountToDeveloper - TRANSFER_FEE);
+
+          return [resultToProvider, resultToDeveloper];
         };
       };
       case (#err err) {};
     };
 
-    return null;
-  }
+    return [];
+  };
+
 }
