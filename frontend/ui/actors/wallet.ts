@@ -9,9 +9,14 @@ import Loader from '../components/Loader';
 let dabCanisterIds: string[] = [];
 
 let identity: Identity | null = null; 
+let loggedWallet : 'plug' | 'stoic' | null = null;
 
 export function getIdentity() {
   return identity;
+}
+
+export function getWallet() {
+  return loggedWallet;
 }
 
 export function createAgent() {
@@ -81,6 +86,7 @@ export async function login(wallet: 'plug' | 'stoic'): Promise<string | 'failed'
     if (logged) {
       localStorage.setItem("_loginType", wallet);
       return (await ic.plug.getPrincipal()).toString() as string
+      loggedWallet = wallet;
     }
     return null;
 
@@ -95,6 +101,7 @@ export async function login(wallet: 'plug' | 'stoic'): Promise<string | 'failed'
       if (stoicIdentity != null) {
         localStorage.setItem("_loginType", wallet);
         identity = stoicIdentity;
+        loggedWallet = wallet;
         return stoicIdentity.getPrincipal().toText()
       } else {
         return 'failed';
@@ -134,7 +141,7 @@ export async function isLogged(): Promise<string | null> {
         host: process.env.NEXT_PUBLIC_IC_HOST,
       })
       Loader.dismiss()
-
+      loggedWallet = wallet;
       return (await ic.plug.getPrincipal()).toString() as string
     }
   } else if (wallet == 'stoic') {
@@ -143,6 +150,7 @@ export async function isLogged(): Promise<string | null> {
     Loader.dismiss()
     if (stoicIdentity) {
       identity = stoicIdentity;
+      loggedWallet = wallet;
       return stoicIdentity.getPrincipal().toText()
     }
   }

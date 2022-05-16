@@ -1,7 +1,7 @@
 import { createActor, canisterId, idlFactory } from "../declarations/ledger"
 import { Actor, ActorSubclass, HttpAgent, Agent } from '@dfinity/agent';
 import { _SERVICE } from "../declarations/ledger/ledger.did"
-import { createAgent } from './wallet';
+import { createAgent, getWallet } from './wallet';
 
 type Interface = ActorSubclass<_SERVICE>
 
@@ -29,11 +29,20 @@ export default class LedgerActor {
     this.anonymous = await createActor(canisterId ?? '', options) as Interface
 
     let agent = createAgent();
-    if (!agent) { return }
-    this.actor = Actor.createActor(idlFactory, {
-      agent: agent,
-      canisterId: canisterId ?? '',
-    })
+    let wallet = getWallet();
+    if (!agent || !wallet) { return }
+
+    if (wallet == 'stoic') {
+      console.log('stoic wallet connected')
+      this.actor = Actor.createActor(idlFactory, {
+        agent: agent,
+        canisterId: canisterId ?? '',
+      })
+    } else {
+      console.log('plug wallet connected')
+      this.actor = await (window as any).ic.plug.createActor({canisterId: canisterId ?? '', interfaceFactory: idlFactory});
+    }
+
   }
 
   async account_balance(accountIndentifier: number[]) {
@@ -46,14 +55,20 @@ export default class LedgerActor {
     if (!this.actor) { return null }
     console.log('transfer_transactipn_fee', to)
 
-    return await this.actor.transfer({
-      to: to,
-      amount: { e8s: amount },
-      fee: { e8s: TRANSFER_FEE },
-      memo: BigInt(1),
-      from_subaccount: [],
-      created_at_time: [],
-    })
+    try {
+      return await this.actor.transfer({
+        to: to,
+        amount: { e8s: amount },
+        fee: { e8s: TRANSFER_FEE },
+        memo: BigInt(1),
+        from_subaccount: [],
+        created_at_time: [],
+      })
+    } catch (e) {
+      console.log(e)
+      return null;
+    }
+
 
   }
 

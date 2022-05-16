@@ -102,6 +102,11 @@ export default function Component({ pool, nft, ticketNum, principal, close }: IP
           const transferResult = await ledgerActor.transfer(payee, totalICP);
           console.log('transferResult', transferResult, totalICP)
 
+          if (!transferResult) {
+            Loader.dismiss();
+            close(true);
+          }
+
           const transferError = (transferResult as any).Err
           if (transferError) {
             Loader.dismiss();
