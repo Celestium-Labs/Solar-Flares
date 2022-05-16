@@ -41,6 +41,10 @@ export default function Component({ pool }: IProps) {
   const name = `${nft.name} #${nft.index}`
   const status = now < activeUntil ? 'Active' : 'Finished';
 
+  const sold = pool.tickets.reduce((prevValue, currentValue, currentIndex, array) => {
+    return prevValue + parseInt(currentValue.count.toString())
+  }, 0)
+
   function createDiff() {
 
     if (activeUntil < now) {
@@ -79,7 +83,7 @@ export default function Component({ pool }: IProps) {
             }
           </div>
           <div className={styles.subTextContainer}>
-            <p className={styles.number}>{pool.tickets.length} / {pool.supply.toString()} sold</p>
+            <p className={styles.number}>{sold} / {pool.supply.toString()} sold</p>
             <p className={styles.date}>{diff ? ('Ends in ' + diff) : 'Ended'}</p>
           </div>
         </div>
