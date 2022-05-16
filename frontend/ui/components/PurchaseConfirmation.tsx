@@ -105,6 +105,7 @@ export default function Component({ pool, nft, ticketNum, principal, close }: IP
           if (!transferResult) {
             Loader.dismiss();
             close(true);
+            return;
           }
 
           const transferError = (transferResult as any).Err
