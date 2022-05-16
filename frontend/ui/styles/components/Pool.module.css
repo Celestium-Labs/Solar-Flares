@@ -28,9 +28,18 @@
   color: #FF0079;
 }
 
-.priceContainer {
+.mainTextContainer {
   display: flex;
   padding-top: 5px;
+}
+
+.subTextContainer {
+  display: flex;
+  padding-top: 5px;
+}
+
+.status {
+  margin-left: auto;
 }
 
 .price {

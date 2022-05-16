@@ -72,9 +72,14 @@ export default function Component({ pool }: IProps) {
 
         <div className={styles.textContainer}>
           <p className={styles.name}>{name}</p>
-          <p className={`${styles.status} ${status == 'Active' ? styles.active : ''}`}>{status}</p>
-          <div className={styles.priceContainer}>
+          <div className={styles.mainTextContainer}>
             <p className={styles.price}>{(parseFloat(pool.price.toString()) / 100000000).toFixed(2)} ICP</p>
+            {status == 'Active' &&
+              <p className={`${styles.status} ${styles.active}`}>Active</p>
+            }
+          </div>
+          <div className={styles.subTextContainer}>
+            <p className={styles.number}>{pool.tickets.length} / {pool.supply.toString()} sold</p>
             <p className={styles.date}>{diff ? ('Ends in ' + diff) : 'Ended'}</p>
           </div>
         </div>
