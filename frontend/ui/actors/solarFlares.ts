@@ -81,6 +81,11 @@ export default class SolarFlaresActor {
     return await this.actor.getPreparation();
   }
 
+  async cancelPreparation() {
+    if (!this.actor) { return null }
+    return await this.actor.cancelPreparation();
+  }
+
   async getCreators() {
     if (!this.anonymous) { return null }
     return await this.anonymous.getCreators();

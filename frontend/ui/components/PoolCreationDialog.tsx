@@ -222,8 +222,8 @@ export default function Component({ principal, created, close, resumeWithPrepare
 
               const index = parseInt(selectedNFT.index.toString());
 
-              const canisterId = selectedNFT.canister //'rkp4c-7iaaa-aaaaa-aaaca-cai' //selectedNFT.canister
-              const tokenIndex = index //135 // 134~154 index
+              const canisterId = selectedNFT.canister // 'rkp4c-7iaaa-aaaaa-aaaca-cai' //
+              const tokenIndex = index //136 // 134~154 index
               console.log('tokenIndex', tokenIndex)
 
               const solarFlaresActor = new SolarFlaresActor();
@@ -233,6 +233,14 @@ export default function Component({ principal, created, close, resumeWithPrepare
               await nftActor.createAgent()
 
               Loader.show('Preparing..');
+
+              // cancel preparation if exists
+              const preparation = await solarFlaresActor.getPreparation();
+              console.log('preparation', preparation)
+              if (preparation && preparation.length > 0) {
+                await solarFlaresActor.cancelPreparation();
+                console.log('preparation cancelled!')
+              }
 
               let date = activeUntil;
               if (process.env.NEXT_PUBLIC_ENV == 'dev') {
@@ -265,10 +273,10 @@ export default function Component({ principal, created, close, resumeWithPrepare
                     setShowConfirmation(false);
                     break;
                   case (JSON.stringify({ 'AlreadyExists': null })):
-                    alert('You are creating another pool now.')
+                    alert('You have failed to create a pool. Try again later.')
                     setShowConfirmation(false);
                     setSelectedNFT(null)
-                    resumeWithPreparedPool();
+                    // resumeWithPreparedPool();
                     break;
                 }
                 return;

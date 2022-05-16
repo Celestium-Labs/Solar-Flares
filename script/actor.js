@@ -4,9 +4,25 @@ import fs from "fs";
 import Path from "path";
 import fetch from "isomorphic-fetch";
 
-const canisterIds = JSON.parse(fs.readFileSync('../canister_ids.json', 'utf8'));
+let mode = 'dev'
 
-const solarFlaresCanisterId = canisterIds.SolarFlares.ic;
+let canisterIdsPath = ''
+let host = '';
+let env = ''
+
+if (mode == 'dev') {
+  canisterIdsPath = '../.dfx/local/canister_ids.json'
+  host = 'http://host.docker.internal:8000'
+  env = 'local'
+} else if (mode == 'prod') {
+  canisterIdsPath = '../canister_ids.json'
+  host = 'https://ic0.app'
+  env = 'ic'
+}
+
+const canisterIds = JSON.parse(fs.readFileSync(canisterIdsPath, 'utf8'));
+
+const solarFlaresCanisterId = canisterIds.SolarFlares[env];
 console.log('solarFlaresCanisterId', solarFlaresCanisterId)
 
 import { createActor } from "./declarations/SolarFlares/index.js";
@@ -28,6 +44,6 @@ export const actor = createActor(solarFlaresCanisterId, {
   agentOptions: {
     identity: identity,
     fetch,
-    host: "https://ic0.app",
+    host: host
   },
 });
