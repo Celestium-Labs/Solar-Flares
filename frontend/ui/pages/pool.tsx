@@ -23,7 +23,7 @@ import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 import { Principal } from '@dfinity/principal'
 
-const Name = (props: {principalText: string}) => {
+const Name = (props: { principalText: string }) => {
 
   const [name, setName] = useState(props.principalText);
 
@@ -205,7 +205,17 @@ const Page: NextPage = () => {
 
           <h1>{`${nft.name} #${nft.index}`}</h1>
 
-          <p>Provider
+          {mode == principal &&
+            <p className={styles.announcementForWinner}>Congraturations 🎉 You are the winner!</p>
+          }
+          {principal && (mode != 'Active' && mode != 'InsufficientParticipants') && mode != principal && principal != pool.owner.toString() &&
+            <p className={styles.announcementForLoser}>Oops! You are not selected this time 😱</p>
+          }
+          {principal && (mode != 'Active' && mode != 'InsufficientParticipants') && mode != principal && principal == pool.owner.toString() &&
+            <p className={styles.announcementForLoser}>Your NFT has been transferred to the winner successfully!</p>
+          }
+          
+          <p className={styles.provider}>Provider
             <a className={styles.owner} href={`https://dashboard.internetcomputer.org/account/${principalToAccountIdentifier(pool.owner.toString(), null)}`} target="_blank" rel="noreferrer">
               {domain ? domain : `${principalToAccountIdentifier(pool.owner.toString(), null).substring(0, 22)}...`}
             </a>
@@ -300,8 +310,7 @@ const Page: NextPage = () => {
           }
 
           {mode != 'InsufficientParticipants' && mode != 'Active' &&
-            <p>Congratulations 🎉 <br />
-              The winner is
+            <p>The winner is
               {' '}<Name principalText={mode} />!</p>
           }
 

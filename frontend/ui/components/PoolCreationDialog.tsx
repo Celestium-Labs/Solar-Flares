@@ -223,7 +223,7 @@ export default function Component({ principal, created, close, resumeWithPrepare
               const index = parseInt(selectedNFT.index.toString());
 
               const canisterId = selectedNFT.canister // 'rkp4c-7iaaa-aaaaa-aaaca-cai' //
-              const tokenIndex = index //136 // 134~154 index
+              const tokenIndex = index //138 // 134~154 index
               console.log('tokenIndex', tokenIndex)
 
               const solarFlaresActor = new SolarFlaresActor();
