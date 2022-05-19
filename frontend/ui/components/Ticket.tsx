@@ -70,7 +70,7 @@ export default function Component({ pool, ticket, mode, principal, reload }: IPr
       if (refund && refund.length > 0) {
         console.log('json', (refund as any)[0])
         if ((refund as any)[0]['ok']) {
-          alert('Refuneded successfully!');
+          alert('refundeded successfully!');
         } else {
 
           let text = (refund as any)[0]['err'].message

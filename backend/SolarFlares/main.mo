@@ -446,14 +446,14 @@ shared({caller = actorOwner}) actor class SolarFlares() = this {
       case (?pool) {
 
         var allTickets : Buffer.Buffer<Ticket> = Buffer.Buffer(0);
-        // purchased tickets can be refuneded only when the pool has not been sold out
+        // purchased tickets can be refundeded only when the pool has not been sold out
         if (pool.status == #InsufficientParticipants) {
           for (ticket in pool.tickets.vals()) {
             allTickets.add(ticket);
           };
         };
 
-        // locked tickets can be refuneded after the pool has ended
+        // locked tickets can be refundeded after the pool has ended
         if (pool.status != #Active) {
           for (ticket in pool.lockedTickets.vals()) {
             allTickets.add(ticket.ticket);
