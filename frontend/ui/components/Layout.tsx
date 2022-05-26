@@ -19,9 +19,6 @@ export function Layout({ children, ...props }: Props) {
 
     <footer>
       <address style={{ textAlign: 'center', paddingTop: 20, paddingBottom: 10 }}>(c) 2022 Celestium Labs all rights reserved</address>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <a style={{ textAlign: 'center', paddingBottom: 40 }} href="https://twitter.com/CelestiumLab" target="_blank" rel="noreferrer">Twitter</a>
-      </div>
     </footer>
 
     <div id="loader" style={{ position: 'fixed', bottom: 0, top: 0, left: 0, right: 0, background: 'rgba(240, 240, 240, 0.3)', display: 'none', flexDirection: 'column' }}>
