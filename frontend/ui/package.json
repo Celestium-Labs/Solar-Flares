@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev -p 3001",
-    "build": "next build && next export",
+    "build": "next build",
     "prod": "export NODE_ENV='production' && yarn install --production=false && next build && next export",
     "start": "next start",
     "lint": "next lint"
