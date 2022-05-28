@@ -9,7 +9,7 @@
     "dev": "next dev -p 3001",
     "build": "next build && next export",
     "prod": "export NODE_ENV='production' && yarn install --production=false && next build && next export",
-    "start": "yarn install && next start",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
@@ -17,8 +17,6 @@
     "@dfinity/agent": "^0.11.1",
     "@dfinity/candid": "^0.11.1",
     "@dfinity/identity": "^0.11.1",
-    "@material-ui/core": "^4.12.4",
-    "@material-ui/pickers": "^3.3.10",
     "@psychedelic/dab-js": "^1.3.2",
     "@psychedelic/icns-js": "^0.1.11",
     "@types/pg": "^8.6.5",
