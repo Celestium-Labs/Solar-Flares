@@ -125,7 +125,6 @@ export async function isLogged(): Promise<string | null> {
     const logged = await ic.plug.isConnected();
     if (logged) {
 
-      Loader.show()
       const whitelists: string [] = [ledgerCanisterId ?? '', solarFlaresCanisterId ?? ''];
       if (process.env.NEXT_PUBLIC_ENV != 'prod') {
         whitelists.push(process.env.NEXT_PUBLIC_ERC721_CANISTER_ID ?? '');
@@ -140,14 +139,11 @@ export async function isLogged(): Promise<string | null> {
         whitelist: whitelists,
         host: process.env.NEXT_PUBLIC_IC_HOST,
       })
-      Loader.dismiss()
       loggedWallet = wallet;
       return (await ic.plug.getPrincipal()).toString() as string
     }
   } else if (wallet == 'stoic') {
-    Loader.show()
     const stoicIdentity = await StoicIdentity.load();
-    Loader.dismiss()
     if (stoicIdentity) {
       identity = stoicIdentity;
       loggedWallet = wallet;
