@@ -9,7 +9,7 @@ function initCanisterIds() {
     console.log("No local canister_ids.json found. Continuing production")
   }
   try {
-    prodCanisters = require(path.resolve(__dirname, "../../", "canister_ids.json"))
+    prodCanisters = require(path.resolve(__dirname, "./", "canister_ids.json"))
   } catch (error) {
     console.log("No production canister_ids.json found. Continuing with local")
   }
