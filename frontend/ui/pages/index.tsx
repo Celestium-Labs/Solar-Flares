@@ -10,43 +10,50 @@ import { useRouter } from 'next/router'
 import Loader from '../components/Loader';
 import PoolActor, { Pool } from '../actors/solarFlares';
 import PoolCreationDialog from '../components/PoolCreationDialog';
-import PoolComponent from '../components/Pool';
+import PoolComponent from '../components/PoolFromModel';
 import { Principal } from '@dfinity/principal';
+import { fetchPools } from '../database';
+import PoolModel from '../models/pool';
 
-const Home: NextPage = () => {
+import { GetServerSideProps } from 'next';
+
+export interface ServerSideProps {
+  pools: PoolModel[]
+}
+
+const Page = (props: ServerSideProps) => {
 
   const { login, accountIdentifier, principal, showLoginMenu, setShowLoginMenu } = useContext(Context);
   const [initialized, setInitialized] = useState(false);
 
   const [showPoolDialog, setShowPoolDialog] = useState(false);
-  const [pools, setPools] = useState<Pool[]>([]);
   const [creators, setCreators] = useState<Principal[]>([]);
 
   const router = useRouter()
 
-  async function fetch(to: number | null) {
+  // async function fetch(to: number | null) {
 
-    Loader.show();
-    const actor = new PoolActor();
-    await actor.createActor();
+  //   Loader.show();
+  //   const actor = new PoolActor();
+  //   await actor.createActor();
 
-    if (to && to > 0) {
-      const newPools = await actor.getPools(Math.max(0, to - 12), to);
-      if (newPools) {
-        setPools(arr => [...newPools.reverse(), ...arr])
-      }
-    } else {
-      const countBigInt = await actor.getTotalCount() ?? BigInt(0);
-      const count = parseInt(countBigInt.toString());
-      const newPools = await actor.getPools(Math.max(0, count - 12), Math.max(count, 1));
-      console.log('newPools', newPools)
-      if (newPools) {
-        setPools(arr => [...newPools.reverse(), ...arr])
-      }
-    }
+  //   if (to && to > 0) {
+  //     const newPools = await actor.getPools(Math.max(0, to - 12), to);
+  //     if (newPools) {
+  //       setPools(arr => [...newPools.reverse(), ...arr])
+  //     }
+  //   } else {
+  //     const countBigInt = await actor.getTotalCount() ?? BigInt(0);
+  //     const count = parseInt(countBigInt.toString());
+  //     const newPools = await actor.getPools(Math.max(0, count - 12), Math.max(count, 1));
+  //     console.log('newPools', newPools)
+  //     if (newPools) {
+  //       setPools(arr => [...newPools.reverse(), ...arr])
+  //     }
+  //   }
 
-    Loader.dismiss();
-  }
+  //   Loader.dismiss();
+  // }
 
   async function getCreators() {
 
@@ -62,7 +69,7 @@ const Home: NextPage = () => {
 
     if (initialized) { return }
     setInitialized(true);
-    fetch(null);
+    // fetch(null);
     getCreators();
 
   }, []);
@@ -143,8 +150,8 @@ const Home: NextPage = () => {
         <section className={styles.section} id="drips">
 
           <div className={styles.poolsContainer}>
-            {pools.map(pool => {
-              return <PoolComponent key={pool.id} pool={pool} />
+            {props.pools.map(pool => {
+              return <PoolComponent key={pool.pool_id} pool={pool} />
             })}
           </div>
         </section>
@@ -213,4 +220,12 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home
+
+export const getServerSideProps: GetServerSideProps = async ({ req, query, locale }) => {
+
+  const pools = await fetchPools();
+
+  return { props: { pools: pools } }
+}
+
+export default Page

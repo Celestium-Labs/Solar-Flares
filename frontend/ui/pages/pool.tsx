@@ -22,6 +22,8 @@ import differenceInSeconds from 'date-fns/differenceInSeconds'
 import differenceInHours from 'date-fns/differenceInHours'
 import differenceInDays from 'date-fns/differenceInDays'
 import { Principal } from '@dfinity/principal'
+import { GetServerSideProps } from 'next';
+import { fetchPool, insertPool } from '../database';
 
 const Name = (props: { principalText: string }) => {
 
@@ -42,7 +44,14 @@ const Name = (props: { principalText: string }) => {
 
 }
 
-const Page: NextPage = () => {
+export interface ServerSideProps {
+  roomId: string,
+  name: string,
+  index: string,
+  url: string,
+}
+
+const Page = (props: ServerSideProps) => {
 
   const router = useRouter()
   const { id } = router.query as { id: string | null };
@@ -346,6 +355,30 @@ const Page: NextPage = () => {
 
     </div>
 
+  } else {
+
+
+    dom = <div className={styles.top}>
+
+      <div className={styles.poolContainer}>
+
+        <div className={styles.poolLeft}>
+
+          <h1>{`${props.name} #${props.index}`}</h1>
+
+          <div className={styles.numbers}>
+            <p>Fetching data from blockchain...</p>
+          </div>
+
+        </div>
+
+        <div className={styles.poolRight}>
+          <img src={props.url} alt={props.name} />
+        </div>
+      </div>
+
+    </div>
+
   }
 
 
@@ -353,20 +386,20 @@ const Page: NextPage = () => {
     <Layout>
 
       <Head>
-        <title>SOLAR FLARES - Get an NFT on IC</title>
+        <title>{props.name} #{props.index} - SOLAR FLARES</title>
         <meta name="description" content="When the sun fills up with helium, a solar flare shoots in a random direction, at one contributor" />
         <link rel="icon" href="/favicon.ico" />
-        <meta property="og:title" content={"SOLAR FLARES - Get an NFT on IC"} />
+        <meta property="og:title" content={`${props.name} #${props.index} - SOLAR FLARES`} />
         <meta property="og:type" content="website" />
         <meta property="og:description" content={'When the sun fills up with helium, a solar flare shoots in a random direction, at one contributor'} />
-        <meta property="og:url" content="https://jdq7a-qiaaa-aaaad-qcbia-cai.ic.fleek.co/ogp.jpg" />
-        <meta property="og:image" content="https://jdq7a-qiaaa-aaaad-qcbia-cai.ic.fleek.co/ogp.jpg" />
+        <meta property="og:url" content={props.url} />
+        <meta property="og:image" content={props.url} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
 
-        <meta name="twitter:title" content={'SOLAR FLARES - Get an NFT on IC'} />
+        <meta name="twitter:title" content={`${props.name} #${props.index} - SOLAR FLARES`} />
         <meta name="twitter:description" content={'When the sun fills up with helium, a solar flare shoots in a random direction, at one contributor'} />
-        <meta name="twitter:image" content="https://jdq7a-qiaaa-aaaad-qcbia-cai.ic.fleek.co/ogp.jpg" />
+        <meta name="twitter:image" content={props.url} />
         <meta name="twitter:card" content="summary_large_image" />
       </Head>
 
@@ -376,6 +409,44 @@ const Page: NextPage = () => {
 
     </Layout>
   )
+}
+
+
+export const getServerSideProps: GetServerSideProps = async ({ req, query, locale }) => {
+
+  const { id } = query as { id: string | null };
+
+  if (id) {
+
+    const nft = await fetchPool(id);
+
+    if (nft) {
+
+      console.log('found', id)
+
+      return { props: { name: nft.name, index: nft.index, url: nft.url } }
+
+    } else {
+
+      console.log('not found', id)
+
+      const actor = new PoolActor();
+      await actor.createActor();
+  
+      const pools = await actor.getPool(id);
+      if (pools && pools.length > 0) {
+        const pool = pools[0] as Pool;
+        const nft = await getNFTDetail(pool.token.canisterId, 'EXT', parseInt(pool.token.index.toString()));
+        if (nft.name && nft.index && nft.url && pool.activeUntil) {          
+          insertPool(id, nft.name, parseInt(nft.index.toString()), nft.url, new Date(parseInt(pool.activeUntil.toString()) / 1000000), nft.canister, pool.price.toString(), parseInt(pool.supply.toString()))
+          return { props: { name: nft.name, index: nft.index.toString(), url: nft.url } }
+        }
+      }
+    }
+
+  }
+
+  throw Error('not found')
 }
 
 export default Page

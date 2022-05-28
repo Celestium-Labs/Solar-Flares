@@ -21,7 +21,7 @@ export function getWallet() {
 
 export function createAgent() {
 
-  const ic = (window as any).ic;
+  const ic = (typeof window !== "undefined") ? (window as any).ic : null;
 
   let agent: Agent | null = null;
 
@@ -47,7 +47,7 @@ export function createAgent() {
 
 export async function login(wallet: 'plug' | 'stoic'): Promise<string | 'failed' | null> {
 
-  const ic = (window as any).ic;
+  const ic = (typeof window !== "undefined") ? (window as any).ic : null;
 
   const principalId = await isLogged();
 

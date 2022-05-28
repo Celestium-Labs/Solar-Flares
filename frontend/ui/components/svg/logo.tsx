@@ -3,28 +3,28 @@ export default function Component() {
   <title>Artboard</title>
   <defs>
       <linearGradient x1="83.7598673%" y1="33.5108096%" x2="27.2240592%" y2="60.6964691%" id="linearGradient-1">
-          <stop stop-color="#D95740" offset="0%"></stop>
-          <stop stop-color="#B22C1E" offset="100%"></stop>
+          <stop stopColor="#D95740" offset="0%"></stop>
+          <stop stopColor="#B22C1E" offset="100%"></stop>
       </linearGradient>
       <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-2">
-          <stop stop-color="#C43F2D" offset="0%"></stop>
-          <stop stop-color="#E47359" offset="100%"></stop>
+          <stop stopColor="#C43F2D" offset="0%"></stop>
+          <stop stopColor="#E47359" offset="100%"></stop>
       </linearGradient>
       <linearGradient x1="84.7222222%" y1="1.22124533e-13%" x2="18.7069927%" y2="144.192093%" id="linearGradient-3">
-          <stop stop-color="#AD321F" offset="0%"></stop>
-          <stop stop-color="#972013" offset="100%"></stop>
+          <stop stopColor="#AD321F" offset="0%"></stop>
+          <stop stopColor="#972013" offset="100%"></stop>
       </linearGradient>
       <linearGradient x1="69.1600974%" y1="7.31665632e-14%" x2="25.7764918%" y2="96.7109456%" id="linearGradient-4">
-          <stop stop-color="#E42C97" offset="0%"></stop>
-          <stop stop-color="#CA226B" offset="100%"></stop>
+          <stop stopColor="#E42C97" offset="0%"></stop>
+          <stop stopColor="#CA226B" offset="100%"></stop>
       </linearGradient>
       <linearGradient x1="71.3304421%" y1="-1.80411242e-14%" x2="32.6989619%" y2="96.6939448%" id="linearGradient-5">
-          <stop stop-color="#C41A64" offset="0%"></stop>
-          <stop stop-color="#6D0D29" offset="100%"></stop>
+          <stop stopColor="#C41A64" offset="0%"></stop>
+          <stop stopColor="#6D0D29" offset="100%"></stop>
       </linearGradient>
       <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-6">
-          <stop stop-color="#C64230" offset="0%"></stop>
-          <stop stop-color="#DF6B52" offset="100%"></stop>
+          <stop stopColor="#C64230" offset="0%"></stop>
+          <stop stopColor="#DF6B52" offset="100%"></stop>
       </linearGradient>
   </defs>
   <g id="Artboard" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">

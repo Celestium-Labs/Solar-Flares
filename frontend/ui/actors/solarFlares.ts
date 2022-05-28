@@ -15,7 +15,6 @@ const options = {
 
 export default class SolarFlaresActor {
 
-  ic = (window as any).ic;
   actor: Interface | null = null;
   anonymous: Interface | null = null;
   canisterId = canisterId ?? '';
