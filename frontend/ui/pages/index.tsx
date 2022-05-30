@@ -90,16 +90,14 @@ const Page = (props: ServerSideProps) => {
     Loader.dismiss();
 
     if (preparation && preparation.length > 0) {
+      const cancel = await actor.cancelPreparation();
+      if (!cancel) {
+        alert('Failed to start to create a pool. Try again later.')
+        return;
+      }
+    };
 
-      // prepare
-      console.log(preparation)
-
-
-    } else {
-      // create
-      setShowPoolDialog(true);
-    }
-
+    setShowPoolDialog(true);
 
   }, [accountIdentifier]);
 

@@ -284,8 +284,17 @@ export default function Component({ principal, created, close, resumeWithPrepare
 
               Loader.show('Transferring..');
 
-              const res = await nftActor.transfer(tokenIndex, principal, solarFlaresActor.canisterId);
-              console.log('res', res)
+              try {
+
+                const res = await nftActor.transfer(tokenIndex, principal, solarFlaresActor.canisterId);
+                console.log('res', res)
+
+              } catch {
+
+                Loader.dismiss();
+                alert('Failed to transfer your NFT. Try again.');
+                return;
+              }
 
               Loader.show('Creating..');
 
@@ -297,7 +306,7 @@ export default function Component({ principal, created, close, resumeWithPrepare
                 Loader.dismiss();
                 switch (JSON.stringify(createError)) {
                   case (JSON.stringify({ 'NotTransferred': null })):
-                    alert('You need to transfer the nft first.')
+                    alert('You need to transfer the nft first. If you list it on Entrepot, you need to unlist it there.')
                     break;
                   case (JSON.stringify({ 'NotExists': null })):
                     alert('Unknown error occurs when creating a pool. Try again later.')
