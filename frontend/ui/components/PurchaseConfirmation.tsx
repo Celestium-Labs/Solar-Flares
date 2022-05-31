@@ -74,6 +74,11 @@ export default function Component({ pool, nft, ticketNum, principal, close }: IP
           if (lockError) {
             Loader.dismiss();
 
+            // #PoolNotFound;
+            // #CalledByOwner;
+            // #Full;
+            // #Ended;
+
             switch (JSON.stringify(lockError)) {
               case (JSON.stringify({ 'PoolNotFound': null })):
                 alert('Unknown error has occurred. Try again later.')
@@ -83,7 +88,7 @@ export default function Component({ pool, nft, ticketNum, principal, close }: IP
                 alert('You can\'t purchase a ticket because you are the host of this pool.')
                 break;
               case (JSON.stringify({ 'Full': null })):
-                alert('This drip has been sold out now.')
+                alert('All the tickets have already been sold out or someone else is locking some tickets now.')
                 close(true);
                 break;
               case (JSON.stringify({ 'Ended': null })):
